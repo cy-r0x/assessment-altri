@@ -1,0 +1,28 @@
+# PDFs
+*.pdf
+assessment-brief.pdf
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Node
+node_modules/
+.next/
+out/
+dist/
+*.tsbuildinfo
+next-env.d.ts
