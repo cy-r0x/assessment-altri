@@ -3,7 +3,7 @@ from math import ceil
 from sqlalchemy import func, select
 
 from app.core import AppError
-from app.db import Client, Database, get_db_instance
+from app.db import Client, Database, Feedback, get_db_instance
 
 
 class ClientService:
@@ -40,9 +40,16 @@ class ClientService:
             client = session.get(Client, client_id)
             if client is None:
                 raise AppError("Client not found", status_code=404)
+
+            feedback = session.scalars(
+                select(Feedback)
+                .where(Feedback.client_id == client_id)
+                .order_by(Feedback.created_at.desc(), Feedback.id.desc())
+            ).all()
+
             return {
-                "profile": client.to_summary(),
-                "feedback": [],
+                "profile": client.to_profile(),
+                "feedback": [item.to_dict() for item in feedback],
             }
         finally:
             session.close()

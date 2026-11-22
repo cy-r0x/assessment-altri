@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Any
 
-from sqlalchemy import Boolean, Date, Float, Integer, String, Text
+from sqlalchemy import Boolean, Date, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -41,4 +41,43 @@ class Client(Base):
             "market_preferences": self.market_preferences,
             "min_bedrooms": self.min_bedrooms,
             "onboarded_at": self.onboarded_at.isoformat() if self.onboarded_at else None,
+        }
+
+    def to_profile(self) -> dict[str, Any]:
+        return {
+            **self.to_summary(),
+            "budget_range": self.budget_range,
+            "down_payment_pct": float(self.down_payment_pct)
+            if self.down_payment_pct is not None
+            else None,
+            "cohost_fee_pct": float(self.cohost_fee_pct)
+            if self.cohost_fee_pct is not None
+            else None,
+            "avoid_markets": self.avoid_markets,
+            "setting_rank": self.setting_rank,
+            "renovation_appetite": self.renovation_appetite,
+            "wow_factors": self.wow_factors,
+            "wants_turnkey": self.wants_turnkey,
+            "notes": self.notes,
+        }
+
+
+class Feedback(Base):
+    __tablename__ = "feedback"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    client_id: Mapped[str] = mapped_column(String, ForeignKey("clients.id"), nullable=False)
+    deal_id: Mapped[str] = mapped_column(String, nullable=False)
+    reaction: Mapped[str] = mapped_column(String, nullable=False)
+    comment: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[date | None] = mapped_column(Date, nullable=True)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "client_id": self.client_id,
+            "deal_id": self.deal_id,
+            "reaction": self.reaction,
+            "comment": self.comment,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
         }
