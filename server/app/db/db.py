@@ -1,1 +1,53 @@
-# Database setup (connection, session, engine) goes here.
+from __future__ import annotations
+
+import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session, sessionmaker
+
+_SERVER_ROOT = Path(__file__).resolve().parents[2]
+load_dotenv(_SERVER_ROOT / ".env")
+
+
+def _normalize_database_url(url: str) -> str:
+    """Use the psycopg (v3) driver with SQLAlchemy."""
+    if url.startswith("postgresql+psycopg://"):
+        return url
+    if url.startswith("postgresql://"):
+        return "postgresql+psycopg://" + url.removeprefix("postgresql://")
+    if url.startswith("postgres://"):
+        return "postgresql+psycopg://" + url.removeprefix("postgres://")
+    return url
+
+
+class Database:
+    _instance: Database | None = None
+
+    def __init__(self, database_url: str | None = None) -> None:
+        if database_url is None:
+            database_url = os.getenv("DATABASE_URL")
+        if not database_url:
+            raise RuntimeError(
+                "DATABASE_URL is not set. Copy server/.env.example to server/.env and fill it in."
+            )
+
+        self.engine: Engine = create_engine(_normalize_database_url(database_url))
+        self.SessionLocal = sessionmaker(
+            bind=self.engine,
+            autoflush=False,
+            autocommit=False,
+            expire_on_commit=False,
+        )
+
+    def get_session(self) -> Session:
+        return self.SessionLocal()
+
+
+def get_db_instance() -> Database:
+    """Return the process-wide Database singleton."""
+    if Database._instance is None:
+        Database._instance = Database()
+    return Database._instance
