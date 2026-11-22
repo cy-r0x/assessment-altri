@@ -41,18 +41,22 @@ export default async function ClientPage({ params }: ClientPageProps) {
     <div className="min-h-dvh bg-background">
       <AppHeader />
 
-      <main className="mx-auto w-full max-w-[1100px] px-5 pb-14 pt-5 md:px-8">
+      <main className="relative mx-auto w-full max-w-[1400px] px-6 pb-12 pt-5 md:px-10">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 -top-6 h-48 bg-[radial-gradient(ellipse_at_top,_rgba(255,56,92,0.06),_transparent_60%)]"
+        />
+
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-[13px] font-medium text-foreground-muted hover:text-foreground"
+          className="relative inline-flex items-center gap-1.5 text-[13px] font-medium text-foreground-muted transition-colors hover:text-foreground"
         >
           <ArrowLeft size={14} />
           Clients
         </Link>
 
-        {/* Profile sets height; feedback locks to that height and scrolls */}
-        <div className="relative mt-4 grid grid-cols-1 gap-4 lg:grid-cols-1 lg:pr-[calc(22rem+1rem)]">
-          <section className="rounded-[12px] border border-border bg-surface p-5">
+        <div className="relative mt-4 grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_26rem]">
+          <section className="rounded-[14px] border border-border bg-surface p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
             <div className="flex items-start gap-4">
               <ClientAvatar id={profile.id} size="lg" />
               <div className="min-w-0 flex-1">
@@ -64,11 +68,11 @@ export default async function ClientPage({ params }: ClientPageProps) {
                     {formatBudget(profile.budget)}
                   </span>
                   <span> · </span>
-                  <span className="capitalize">{formatFocus(profile.main_focus)}</span>
+                  <span>{formatFocus(profile.main_focus)}</span>
                   <span> · </span>
-                  <span className="capitalize">{profile.budget_flexibility ?? "—"}</span>
+                  <span>{titleCase(profile.budget_flexibility)}</span>
                 </p>
-                <div className="mt-2 flex flex-wrap gap-2 text-[12px]">
+                <div className="mt-2.5 flex flex-wrap gap-2 text-[12px]">
                   <Chip icon={<ThumbsUp size={12} />} label={`${ups} up`} tone="success" />
                   <Chip icon={<ThumbsDown size={12} />} label={`${downs} down`} tone="danger" />
                 </div>
@@ -76,29 +80,34 @@ export default async function ClientPage({ params }: ClientPageProps) {
             </div>
 
             {profile.notes ? (
-              <p className="mt-4 text-pretty text-[14px] leading-relaxed text-foreground-muted">
+              <p className="mt-4 border-t border-border pt-4 text-pretty text-[14px] leading-relaxed text-foreground-muted">
                 {profile.notes}
               </p>
             ) : null}
 
             <dl className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-              <Fact icon={<MapPin size={14} />} label="Markets" value={joinList(profile.market_preferences) || "—"} />
-              <Fact icon={<MapPin size={14} />} label="Avoid" value={joinList(profile.avoid_markets) || "None"} />
-              <Fact icon={<BedDouble size={14} />} label="Min bedrooms" value={String(profile.min_bedrooms ?? "—")} />
-              <Fact icon={<Percent size={14} />} label="Down payment" value={pct(profile.down_payment_pct)} />
-              <Fact icon={<CircleDollarSign size={14} />} label="Co-host fee" value={pct(profile.cohost_fee_pct)} />
-              <Fact icon={<Wrench size={14} />} label="Renovation" value={profile.renovation_appetite ?? "—"} />
-              <Fact icon={<Sparkles size={14} />} label="Wow factors" value={joinList(profile.wow_factors) || "—"} />
+              <Fact icon={<MapPin size={18} />} label="Markets" value={joinList(profile.market_preferences) || "—"} />
+              <Fact icon={<MapPin size={18} />} label="Avoid" value={joinList(profile.avoid_markets) || "None"} />
+              <Fact icon={<BedDouble size={18} />} label="Min bedrooms" value={String(profile.min_bedrooms ?? "—")} />
+              <Fact icon={<Percent size={18} />} label="Down payment" value={pct(profile.down_payment_pct)} />
+              <Fact icon={<CircleDollarSign size={18} />} label="Co-host fee" value={pct(profile.cohost_fee_pct)} />
+              <Fact icon={<Wrench size={18} />} label="Renovation" value={titleCase(profile.renovation_appetite)} />
+              <Fact icon={<Sparkles size={18} />} label="Wow factors" value={joinList(profile.wow_factors) || "—"} />
               <Fact
-                icon={<Home size={14} />}
+                icon={<Home size={18} />}
                 label="Turnkey"
                 value={profile.wants_turnkey == null ? "—" : profile.wants_turnkey ? "Yes" : "No"}
               />
-              <Fact icon={<CalendarDays size={14} />} label="Onboarded" value={profile.onboarded_at ?? "—"} />
+              <Fact
+                icon={<CalendarDays size={18} />}
+                label="Onboarded"
+                value={formatDate(profile.onboarded_at)}
+                wide
+              />
             </dl>
           </section>
 
-          <aside className="flex max-h-[28rem] flex-col rounded-[12px] border border-border bg-surface p-4 lg:absolute lg:inset-y-0 lg:right-0 lg:max-h-none lg:w-[22rem]">
+          <aside className="flex max-h-[min(28rem,70dvh)] flex-col overflow-hidden rounded-[14px] border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)]">
             <div className="flex shrink-0 items-baseline justify-between gap-2">
               <h2 className="text-[16px] font-medium text-foreground">Feedback</h2>
               <span className="text-[12px] tabular-nums text-foreground-muted">
@@ -109,26 +118,26 @@ export default async function ClientPage({ params }: ClientPageProps) {
             {feedback.length === 0 ? (
               <p className="mt-4 text-[13px] text-foreground-muted">No feedback yet.</p>
             ) : (
-              <ul className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain pr-1">
+              <ul className="mt-3 min-h-0 space-y-2 overflow-y-auto overscroll-contain pr-1">
                 {feedback.map((item) => {
                   const up = item.reaction === "up";
                   const down = item.reaction === "down";
                   return (
                     <li
                       key={item.id}
-                      className="rounded-[10px] border border-border bg-surface-muted/60 px-3 py-2.5"
+                      className="rounded-[10px] border border-border bg-surface-muted/80 px-3 py-2.5"
                     >
                       <div className="flex items-center gap-2">
                         {up ? (
-                          <ThumbsUp size={14} className="shrink-0 text-success" />
+                          <ThumbsUp size={14} className="shrink-0 text-success" strokeWidth={2} />
                         ) : down ? (
-                          <ThumbsDown size={14} className="shrink-0 text-danger" />
+                          <ThumbsDown size={14} className="shrink-0 text-danger" strokeWidth={2} />
                         ) : null}
                         <p className="min-w-0 flex-1 truncate text-[13px] font-medium text-foreground">
                           {item.deal_id}
                         </p>
                         <span className="shrink-0 text-[11px] tabular-nums text-foreground-subtle">
-                          {item.created_at ?? ""}
+                          {formatDate(item.created_at)}
                         </span>
                       </div>
                       {item.comment ? (
@@ -162,7 +171,7 @@ function Chip({
       ? "bg-success-soft text-success"
       : "bg-danger-soft text-danger";
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-medium ${styles}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium ${styles}`}>
       {icon}
       {label}
     </span>
@@ -173,19 +182,25 @@ function Fact({
   icon,
   label,
   value,
+  wide = false,
 }: {
   icon: ReactNode;
   label: string;
   value: string;
+  wide?: boolean;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-[10px] bg-surface-muted/70 px-3 py-2.5">
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-surface text-foreground-muted [&>svg]:size-5">
+    <div
+      className={`flex items-center gap-3 rounded-[10px] bg-surface-muted/80 px-3.5 py-3 ${
+        wide ? "sm:col-span-2" : ""
+      }`}
+    >
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface text-foreground-muted shadow-[inset_0_0_0_1px_rgba(0,0,0,0.04)]">
         {icon}
       </span>
       <div className="min-w-0">
-        <dt className="text-[11px] text-foreground-muted">{label}</dt>
-        <dd className="truncate text-[13px] capitalize text-foreground">{value}</dd>
+        <dt className="text-[11px] tracking-wide text-foreground-muted">{label}</dt>
+        <dd className="mt-0.5 truncate text-[14px] text-foreground">{value}</dd>
       </div>
     </div>
   );
@@ -199,4 +214,20 @@ function joinList(values: string[] | null | undefined): string {
 function pct(value: number | null | undefined): string {
   if (value == null) return "—";
   return `${Math.round(value * 100)}%`;
+}
+
+function titleCase(value: string | null | undefined): string {
+  if (!value) return "—";
+  return value.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function formatDate(value: string | null | undefined): string {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }

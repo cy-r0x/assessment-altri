@@ -14,7 +14,7 @@ export default function Home({ searchParams }: HomeProps) {
 
       <Suspense
         fallback={
-          <div className="mx-auto max-w-[1120px] px-6 py-16 text-[15px] text-foreground-muted">
+          <div className="mx-auto max-w-[1760px] px-6 py-10 text-[15px] text-foreground-muted md:px-10">
             Loading clients…
           </div>
         }

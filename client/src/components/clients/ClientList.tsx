@@ -14,54 +14,68 @@ export function ClientList({ clients, pagination }: ClientListProps) {
   const { page, total_pages, total } = pagination;
 
   return (
-    <div className="mx-auto w-full max-w-[960px] px-6 pb-14 pt-8 md:px-10">
-      <div className="mb-6">
-        <h1 className="text-[26px] font-medium tracking-tight text-foreground md:text-[28px]">
-          Clients
-        </h1>
-        <p className="mt-1 text-[14px] text-foreground-muted">
-          {total} investors · pick one to review deals
+    <div className="mx-auto w-full max-w-[1760px] px-5 pb-8 pt-4 md:px-8 xl:px-10">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-2 border-b border-border pb-4">
+        <div>
+          <h1 className="text-[24px] font-medium tracking-tight text-foreground md:text-[26px]">
+            Clients
+          </h1>
+          <p className="mt-0.5 text-[14px] text-foreground-muted">
+            Pick an investor to review deals
+          </p>
+        </div>
+        <p className="text-[14px] tabular-nums text-foreground-muted">
+          {total} total · page {page} of {total_pages}
         </p>
       </div>
 
-      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {clients.map((client) => (
-          <li key={client.id}>
-            <Link
-              href={`/clients/${client.id}`}
-              className="flex items-center gap-3 rounded-[12px] border border-border bg-surface p-3.5 transition-shadow hover:shadow-[var(--shadow-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <ClientAvatar id={client.id} size="md" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-[15px] font-medium text-foreground">
-                  {client.name ?? "Client"}
-                </p>
-                <p className="mt-0.5 truncate text-[13px] text-foreground-muted">
-                  <span className="font-medium tabular-nums text-foreground">
-                    {formatBudget(client.budget)}
-                  </span>
-                  <span> · </span>
-                  <span className="capitalize">{formatFocus(client.main_focus)}</span>
-                </p>
-                <p className="mt-1 flex items-center gap-2 truncate text-[12px] text-foreground-subtle">
-                  <MapPin size={12} className="shrink-0" />
-                  <span className="truncate">
-                    {client.market_preferences?.length
-                      ? client.market_preferences.slice(0, 2).join(", ")
-                      : "Open markets"}
-                  </span>
-                  <BedDouble size={12} className="ml-auto shrink-0" />
-                  <span className="tabular-nums">{client.min_bedrooms ?? "—"}+</span>
-                </p>
-              </div>
-            </Link>
-          </li>
-        ))}
+      <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {clients.map((client) => {
+          const markets = client.market_preferences?.length
+            ? client.market_preferences.join(" · ")
+            : "Open markets";
+
+          return (
+            <li key={client.id}>
+              <Link
+                href={`/clients/${client.id}`}
+                className="flex h-full items-center gap-3.5 rounded-[14px] border border-border bg-surface px-3.5 py-3.5 transition-[box-shadow,border-color,transform] duration-150 hover:-translate-y-px hover:border-border-strong hover:shadow-[var(--shadow-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <ClientAvatar id={client.id} size="md" />
+                <div className="min-w-0 flex-1 space-y-1.5">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p className="truncate text-[15px] font-medium text-foreground">
+                      {client.name ?? "Client"}
+                    </p>
+                    <p className="shrink-0 text-[15px] font-medium tabular-nums text-foreground">
+                      {formatBudget(client.budget)}
+                    </p>
+                  </div>
+                  <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-foreground-muted">
+                    <span>{formatFocus(client.main_focus)}</span>
+                    <span className="text-border-strong">·</span>
+                    <span className="inline-flex items-center gap-1">
+                      <BedDouble size={13} />
+                      <span className="tabular-nums">{client.min_bedrooms ?? "—"}+</span>
+                    </span>
+                  </p>
+                  <p className="flex items-center gap-1.5 text-[13px] text-foreground-subtle">
+                    <MapPin size={13} className="shrink-0" />
+                    <span className="truncate">{markets}</span>
+                  </p>
+                </div>
+              </Link>
+            </li>
+          );
+        })}
       </ul>
 
-      <nav className="mt-8 flex items-center justify-center gap-2" aria-label="Pagination">
+      <nav
+        className="mt-6 flex items-center justify-center gap-2 border-t border-border pt-4"
+        aria-label="Pagination"
+      >
         <PaginationLink page={page - 1} disabled={page <= 1} label="Previous" icon="prev" />
-        <span className="px-3 text-[13px] tabular-nums text-foreground-muted">
+        <span className="px-2 text-[13px] tabular-nums text-foreground-muted">
           {page} / {total_pages}
         </span>
         <PaginationLink page={page + 1} disabled={page >= total_pages} label="Next" icon="next" />

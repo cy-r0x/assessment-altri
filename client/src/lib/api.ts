@@ -42,7 +42,9 @@ export function formatBudget(value: number | null | undefined): string {
 
 export function formatFocus(focus: string | null | undefined): string {
   if (!focus) return "—";
-  return focus.replaceAll("_", " ");
+  return focus
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 export function formatPct(value: number | null | undefined): string {

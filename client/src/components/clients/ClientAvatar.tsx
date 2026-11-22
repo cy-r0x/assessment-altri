@@ -1,13 +1,15 @@
 import { UserRound } from "lucide-react";
 
-const AVATAR_TONES = [
-  "bg-[#f0f0f0] text-[#717171]",
-  "bg-[#ebebeb] text-[#595959]",
-  "bg-[#f7f7f7] text-[#6a6a6a]",
-  "bg-[#eeeeee] text-[#484848]",
-];
+export const AVATAR_TONES = [
+  "bg-[#ffe8ec] text-[#c13515]",
+  "bg-[#e8f1ff] text-[#428bff]",
+  "bg-[#e6f4ea] text-[#008a05]",
+  "bg-[#f0f0f0] text-[#595959]",
+  "bg-[#fff0e8] text-[#b35c1e]",
+  "bg-[#efe8ff] text-[#6b4fbb]",
+] as const;
 
-function toneFor(id: string): string {
+export function toneFor(id: string): string {
   let hash = 0;
   for (const ch of id) hash = (hash + ch.charCodeAt(0)) % AVATAR_TONES.length;
   return AVATAR_TONES[hash] ?? AVATAR_TONES[0];
