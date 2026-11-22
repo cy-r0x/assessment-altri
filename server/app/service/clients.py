@@ -2,6 +2,7 @@ from math import ceil
 
 from sqlalchemy import func, select
 
+from app.core import AppError
 from app.db import Client, Database, get_db_instance
 
 
@@ -22,8 +23,7 @@ class ClientService:
             ).all()
 
             return {
-                "message": "Clients fetched successfully",
-                "data": [client.to_summary() for client in clients],
+                "items": [client.to_summary() for client in clients],
                 "pagination": {
                     "page": page,
                     "limit": limit,
@@ -35,11 +35,17 @@ class ClientService:
             session.close()
 
     def get_client(self, client_id: str):
-        return {
-            "id": client_id,
-            "profile": None,
-            "feedback": [],
-        }
+        session = self.db.get_session()
+        try:
+            client = session.get(Client, client_id)
+            if client is None:
+                raise AppError("Client not found", status_code=404)
+            return {
+                "profile": client.to_summary(),
+                "feedback": [],
+            }
+        finally:
+            session.close()
 
     def get_recommendations(self, client_id: str):
         return {

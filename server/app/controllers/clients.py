@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Query
 
+from app.core import success
 from app.service.clients import client_service
 
 router = APIRouter(tags=["clients"])
@@ -11,16 +12,27 @@ def list_clients(
     limit: int = Query(10, ge=1, le=100),
 ):
     """List clients with a short summary each."""
-    return client_service.list_clients(page=page, limit=limit)
+    result = client_service.list_clients(page=page, limit=limit)
+    return success(
+        "Clients fetched successfully",
+        result["items"],
+        pagination=result["pagination"],
+    )
 
 
 @router.get("/clients/{client_id}")
 def get_client(client_id: str):
     """Client profile and feedback history."""
-    return client_service.get_client(client_id)
+    return success(
+        "Client fetched successfully",
+        client_service.get_client(client_id),
+    )
 
 
 @router.get("/clients/{client_id}/recommendations")
 def get_recommendations(client_id: str):
     """Ranked deals + excluded deals with the rule each broke."""
-    return client_service.get_recommendations(client_id)
+    return success(
+        "Recommendations fetched successfully",
+        client_service.get_recommendations(client_id),
+    )
