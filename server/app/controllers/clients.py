@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 
 from app.service.clients import client_service
 
@@ -6,9 +6,12 @@ router = APIRouter(tags=["clients"])
 
 
 @router.get("/clients")
-def list_clients():
+def list_clients(
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
+):
     """List clients with a short summary each."""
-    return client_service.list_clients()
+    return client_service.list_clients(page=page, limit=limit)
 
 
 @router.get("/clients/{client_id}")
