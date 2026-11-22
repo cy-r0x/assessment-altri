@@ -55,8 +55,8 @@ export default async function ClientPage({ params }: ClientPageProps) {
           Clients
         </Link>
 
-        <div className="relative mt-4 grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_26rem]">
-          <section className="rounded-[14px] border border-border bg-surface p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+        <div className="relative mt-4 grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-stretch">
+          <section className="h-full rounded-[14px] border border-border bg-surface p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
             <div className="flex items-start gap-4">
               <ClientAvatar id={profile.id} size="lg" />
               <div className="min-w-0 flex-1">
@@ -107,18 +107,13 @@ export default async function ClientPage({ params }: ClientPageProps) {
             </dl>
           </section>
 
-          <aside className="flex max-h-[min(28rem,70dvh)] flex-col overflow-hidden rounded-[14px] border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)]">
-            <div className="flex shrink-0 items-baseline justify-between gap-2">
-              <h2 className="text-[16px] font-medium text-foreground">Feedback</h2>
-              <span className="text-[12px] tabular-nums text-foreground-muted">
-                {feedback.length}
-              </span>
-            </div>
+          <aside className="flex h-full min-h-0 flex-col overflow-hidden rounded-[14px] border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+            <h2 className="shrink-0 text-[16px] font-medium text-foreground">Feedback</h2>
 
             {feedback.length === 0 ? (
               <p className="mt-4 text-[13px] text-foreground-muted">No feedback yet.</p>
             ) : (
-              <ul className="mt-3 min-h-0 space-y-2 overflow-y-auto overscroll-contain pr-1">
+              <ul className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain pr-1">
                 {feedback.map((item) => {
                   const up = item.reaction === "up";
                   const down = item.reaction === "down";
