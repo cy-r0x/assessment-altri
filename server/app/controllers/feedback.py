@@ -1,6 +1,8 @@
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
+from app.service import feedback as feedback_service
+
 router = APIRouter(tags=["feedback"])
 
 
@@ -14,7 +16,4 @@ class FeedbackCreate(BaseModel):
 @router.post("/feedback")
 def create_feedback(payload: FeedbackCreate):
     """Record a thumbs up/down with an optional comment."""
-    return {
-        "ok": True,
-        "feedback": payload.model_dump(),
-    }
+    return feedback_service.create_feedback(payload.model_dump())
