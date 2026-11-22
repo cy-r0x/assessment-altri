@@ -14,60 +14,36 @@ Internal **acquisitions-rep** tool for STR Search: pick a client, see ranked dea
 
 ## Installed skills
 
-| Skill | Source | Why |
+| Skill | Path | Role |
 | --- | --- | --- |
-| `frontend-design` | [anthropics/skills](https://github.com/anthropics/skills) (~199k★, ~1.2M installs) | Distinctive UI guidance; avoid generic AI aesthetics |
+| `airbnb-ui-skills` | `.agents/skills/airbnb-ui-skills/` | **Primary visual system** (Airbnb) |
+| `design-taste-frontend` | `.agents/skills/design-taste-frontend/` | Anti-slop taste / finish gate |
+| `impeccable` | `.agents/skills/impeccable/` | Anti-slop craft |
+| `emil-design-eng` | `.agents/skills/emil-design-eng/` | Motion / density polish |
+| `frontend-design` | `.agents/skills/frontend-design/` | General distinctive UI (fallback) |
 
-Path: `.agents/skills/frontend-design/`
+## Design pattern: Airbnb search / listing grid
 
-When building or reshaping UI, follow that skill’s process (ground in subject matter → deliberate type/color → critique against AI-default tells).
+Follow Airbnb’s product UI (via `airbnb-ui-skills`), adapted for a rep desk:
 
-## Recommended UI design pattern: Master–Detail
+1. **Sticky top bar** — logo left, pill “search” center, rep chip right.
+2. **Listing-style card grid** — clients as cards (avatar block + name + budget + markets), soft hover lift/shadow.
+3. **Detail route** — `/clients/[id]` for profile, recommendations, feedback (not a marketing landing).
 
-Use a **master–detail** layout (not a multi-widget dashboard):
+Constraints from the Airbnb skill:
 
-1. **Master (left / top):** searchable, paginated client list (short summaries).
-2. **Detail (main):** selected client profile + ranked recommendations + excluded deals + feedback actions.
-
-Why this fits:
-
-- One primary job per screen: help the rep work **one client** at a time.
-- Matches the API shape (`/clients` → `/clients/{id}` → `/clients/{id}/recommendations` + `POST /feedback`).
-- Keeps CoC / cash-needed numbers and “why excluded” next to the person they apply to.
-
-### Supporting patterns (secondary)
-
-- **Progressive disclosure:** ranked deals first; excluded deals collapsed until opened.
-- **Optimistic feedback:** thumbs up/down updates the detail pane and refreshes recommendations.
+- Light mode only (`#FEFEFE` base)
+- Inter, 4px grid, ~12px card radius, ~28px pills
+- Brand accent: Rausch `#FF385C`
+- Body ~15px; headings medium weight; `tabular-nums` for money/IDs
 
 ## Stack notes
 
 - Next.js (App Router) + TypeScript + Tailwind + shadcn/ui (per brief).
-- Talk to the API at `/api/v1/*` with `{ message, data, pagination? }` envelopes.
+- API: `/api/v1/*` with `{ message, data, pagination? }`.
 
-## Color palette — “Cedar & Fog Ledger”
+## Anti-patterns
 
-Calm underwriting desk with a nod to STR destinations (woods / lake), not a marketing site.
-
-| Token | Hex | Use |
-| --- | --- | --- |
-| `--background` | `#EEF2F0` | App canvas (cool mist, not cream) |
-| `--surface` / `--surface-raised` | `#F7F9F8` / `#FFFFFF` | Panels / cards-for-interaction |
-| `--foreground` | `#1A2421` | Primary text |
-| `--foreground-muted` | `#5A6B64` | Secondary labels |
-| `--primary` | `#2F5D50` | Actions, selection, brand |
-| `--accent` | `#3D6E8C` | Links, lake/info accents |
-| `--success` | `#2F6B4F` | Thumbs up, healthy CoC |
-| `--warning` | `#9A6B1F` | Soft risk / borderline pencil |
-| `--danger` | `#8F3D3D` | Thumbs down, excluded, CoC low fail |
-| `--border` | `#C5D0CB` | Dividers |
-
-Defined in `src/app/globals.css` as CSS variables + Tailwind theme tokens (`bg-primary`, `text-foreground-muted`, etc.).
-
-## Anti-patterns for this product
-
-- Marketing landing / hero-first layout (this is a work tool).
-- Dense analytics dashboard competing with recommendations.
-- Generic purple gradients / Inter-only “AI SaaS” look.
-- Cream `#F4F1EA` + terracotta `#D97757` (common AI default).
-- Dark mode / neon glow as the default shell.
+- Fake “ledger / SaaS dashboard” chrome.
+- Purple gradients, neon dark mode, cream+terracotta AI defaults (unless matching a named brand system we chose — here we chose Airbnb).
+- Decorative serif “studio” branding for an internal tool.

@@ -1,49 +1,43 @@
 @import "tailwindcss";
 
 /*
-  Palette: "Cedar & Fog Ledger"
-  STR acquisitions work surface — cool mist paper, deep ink, cedar action.
-  Avoids: purple SaaS, cream+#D97757 terracotta, neon-on-black.
+  Airbnb-inspired system (airbnb-ui-skills + real product cues)
+  Light surfaces, Inter, 4px grid, soft cards, Rausch accent.
 */
 
 :root {
-  /* Surfaces */
-  --background: #eef2f0;
-  --surface: #f7f9f8;
-  --surface-raised: #ffffff;
-  --surface-muted: #e4ebe7;
-  --border: #c5d0cb;
-  --border-strong: #8fa399;
+  --background: #fefefe;
+  --surface: #ffffff;
+  --surface-raised: #eeebe4;
+  --surface-muted: #f7f7f7;
+  --border: #dddddd;
+  --border-strong: #b0b0b0;
 
-  /* Ink */
-  --foreground: #1a2421;
-  --foreground-muted: #5a6b64;
-  --foreground-subtle: #84948d;
+  --foreground: #222222;
+  --foreground-muted: #6a6a6a;
+  --foreground-subtle: #918a85;
 
-  /* Brand / actions */
-  --primary: #2f5d50;
-  --primary-hover: #254a40;
-  --primary-foreground: #f4faf7;
-  --accent: #3d6e8c;
-  --accent-foreground: #f3f8fb;
+  --primary: #ff385c;
+  --primary-hover: #d90b63;
+  --primary-foreground: #ffffff;
+  --accent: #222222;
+  --accent-foreground: #ffffff;
 
-  /* Status (deals / feedback) */
-  --success: #2f6b4f;
-  --success-soft: #d8efe4;
-  --warning: #9a6b1f;
-  --warning-soft: #f3e6c8;
-  --danger: #8f3d3d;
-  --danger-soft: #f3d9d9;
-  --info: #3d6e8c;
-  --info-soft: #d9e7f0;
+  --success: #008a05;
+  --success-soft: #e6f4ea;
+  --warning: #c13515;
+  --warning-soft: #fcebea;
+  --danger: #e25275;
+  --danger-soft: #fde8ee;
+  --info: #428bff;
+  --info-soft: #e8f1ff;
 
-  /* Charts / CoC bands */
-  --coc-low: #8f3d3d;
-  --coc-mid: #2f5d50;
-  --coc-high: #3d6e8c;
+  --coc-low: #c13515;
+  --coc-mid: #008a05;
+  --coc-high: #428bff;
 
-  /* Focus */
-  --ring: #2f5d50;
+  --ring: #222222;
+  --shadow-card: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 @theme inline {
@@ -79,12 +73,16 @@
 
   --color-ring: var(--ring);
 
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --radius-card: 12px;
+  --radius-pill: 28px;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 400;
 }
