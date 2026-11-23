@@ -41,6 +41,7 @@ Constraints from the Airbnb skill:
 
 - Next.js (App Router) + TypeScript + Tailwind + shadcn/ui (per brief).
 - API: `/api/v1/*` with `{ message, data, pagination? }`.
+- Open issues: see `.agents/open-issues.md`.
 
 ## Anti-patterns
 
