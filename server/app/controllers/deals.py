@@ -18,3 +18,12 @@ def list_deals(
         result["items"],
         pagination=result["pagination"],
     )
+
+
+@router.get("/deals/{deal_id}")
+def get_deal(deal_id: str):
+    """Full deal details."""
+    return success(
+        "Deal fetched successfully",
+        deal_service.get_deal(deal_id),
+    )

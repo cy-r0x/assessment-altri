@@ -1,4 +1,10 @@
-import type { ApiSuccess, ClientDetail, ClientSummary, DealSummary } from "@/lib/types";
+import type {
+  ApiSuccess,
+  ClientDetail,
+  ClientSummary,
+  DealDetail,
+  DealSummary,
+} from "@/lib/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 
@@ -42,6 +48,19 @@ export async function fetchDeals(page = 1, limit = 12): Promise<ApiSuccess<DealS
 
   if (!res.ok) {
     throw new Error(`Failed to load deals (${res.status})`);
+  }
+
+  return res.json();
+}
+
+export async function fetchDeal(dealId: string): Promise<ApiSuccess<DealDetail>> {
+  const url = new URL(`/api/v1/deals/${dealId}`, API_URL);
+  const res = await fetch(url, {
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to load deal (${res.status})`);
   }
 
   return res.json();

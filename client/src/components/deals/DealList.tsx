@@ -35,7 +35,10 @@ export function DealList({ deals, pagination }: DealListProps) {
 
           return (
             <li key={deal.id}>
-              <article className="flex h-full flex-col gap-2 rounded-[14px] border border-border bg-surface px-3.5 py-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+              <Link
+                href={`/deals/${deal.id}`}
+                className="flex h-full flex-col gap-2 rounded-[14px] border border-border bg-surface px-3.5 py-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-[box-shadow,border-color,transform] duration-150 hover:-translate-y-px hover:border-border-strong hover:shadow-[var(--shadow-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
                 <div className="flex items-baseline justify-between gap-3">
                   <p className="truncate text-[15px] font-medium text-foreground">
                     {deal.address ?? deal.id}
@@ -73,7 +76,7 @@ export function DealList({ deals, pagination }: DealListProps) {
                     </span>
                   ) : null}
                 </p>
-              </article>
+              </Link>
             </li>
           );
         })}

@@ -50,6 +50,28 @@ export type DealSummary = {
   approved_at: string | null;
 };
 
+export type DealSetupItem = {
+  item: string;
+  cost: number;
+};
+
+export type DealComp = {
+  listing_id: string;
+  revenue: number;
+  bedrooms: number;
+  sleeps: number;
+};
+
+export type DealDetail = DealSummary & {
+  interest_rate: number | null;
+  closing_cost_pct: number | null;
+  setup_items: DealSetupItem[] | null;
+  annual_opex: number | null;
+  est_year1_tax_savings: number | null;
+  comps: DealComp[] | null;
+  analyst_notes: string | null;
+};
+
 export type Pagination = {
   page: number;
   limit: number;

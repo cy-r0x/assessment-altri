@@ -2,6 +2,7 @@ from math import ceil
 
 from sqlalchemy import func, select
 
+from app.core import AppError
 from app.db import Database, Deal, get_db_instance
 
 
@@ -30,6 +31,16 @@ class DealService:
                     "total_pages": ceil(total / limit) if limit else 0,
                 },
             }
+        finally:
+            session.close()
+
+    def get_deal(self, deal_id: str):
+        session = self.db.get_session()
+        try:
+            deal = session.get(Deal, deal_id)
+            if deal is None:
+                raise AppError("Deal not found", status_code=404)
+            return deal.to_dict()
         finally:
             session.close()
 

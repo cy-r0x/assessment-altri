@@ -3,7 +3,7 @@ from math import ceil
 from sqlalchemy import func, select
 
 from app.core import AppError
-from app.db import Client, Database, Feedback, get_db_instance
+from app.db import Client, Database, Deal, Feedback, get_db_instance
 
 
 class ClientService:
@@ -55,6 +55,36 @@ class ClientService:
             session.close()
 
     def get_recommendations(self, client_id: str):
+
+        page = max(page, 1)
+        limit = min(max(limit, 1), 100)
+        offset = (page - 1) * limit
+
+        session = self.db.get_session()
+        try:
+            total = session.scalar(select(func.count()).select_from(Deal)) or 0
+            # client_details = session.scalar(select(Client).where(Client.id == client_id))
+            # if client_details is None:
+            #     raise AppError("Client not found", status_code=404)
+
+            # deals = session.scalars(
+            #     select(Deal).order_by(Deal.id).offset(offset).limit(limit)
+            # ).all()
+
+            # recommendations = []
+
+            # for deal in deals:
+            #     cost = deal.purchase_price * client_details.down_payment_pct
+            #     cost += deal.purchase_price * client_details.closing_cost_pct
+            #     cost += 
+            #     if cost > client_details.budget:
+            #         continue
+                
+
+
+        finally:
+            session.close()
+
         return {
             "client_id": client_id,
             "recommendations": [],
