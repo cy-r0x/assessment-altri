@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { AppNav } from "@/components/AppNav";
+
 export function AppHeader() {
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-surface/90 backdrop-blur-md">
@@ -16,6 +18,7 @@ export function AppHeader() {
             STR Search
           </span>
         </Link>
+        <AppNav />
       </div>
     </header>
   );

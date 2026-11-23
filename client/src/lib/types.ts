@@ -35,6 +35,21 @@ export type ClientDetail = {
   feedback: FeedbackItem[];
 };
 
+export type DealSummary = {
+  id: string;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  purchase_price: number | null;
+  bedrooms: number | null;
+  baths: number | null;
+  lot_acres: number | null;
+  turnkey: boolean | null;
+  revenue: { low?: number; mid?: number; high?: number } | null;
+  highlights: string[] | null;
+  approved_at: string | null;
+};
+
 export type Pagination = {
   page: number;
   limit: number;
