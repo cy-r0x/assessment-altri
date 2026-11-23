@@ -16,7 +16,7 @@ class FeedbackCreate(BaseModel):
 
 @router.post("/feedback")
 def create_feedback(payload: FeedbackCreate):
-    """Record a thumbs up/down with an optional comment."""
+    """Record a thumbs up or down with an optional comment."""
     return success(
         "Feedback recorded successfully",
         feedback_service.create_feedback(payload.model_dump()),
