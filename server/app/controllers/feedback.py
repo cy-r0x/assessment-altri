@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from app.core import success
-from app.service import feedback as feedback_service
+from app.service.feedback import feedback_service
 
 router = APIRouter(tags=["feedback"])
 
