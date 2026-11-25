@@ -97,13 +97,12 @@ export function DealList({
                         </span>
                       </div>
                       <div className="flex flex-1 flex-col gap-1 px-4 pb-4 pt-3">
+                        <p className="truncate text-[16px] font-medium text-foreground">
+                          {deal.address ?? deal.id}
+                        </p>
                         <p className="flex items-center gap-1.5 text-[13px] text-foreground-muted">
                           <MapPin size={14} className="shrink-0" aria-hidden />
                           <span className="truncate">{location}</span>
-                        </p>
-
-                        <p className="truncate text-[16px] font-medium text-foreground">
-                          {deal.address ?? deal.id}
                         </p>
 
                         <dl className="mt-3 grid grid-cols-3 divide-x divide-border border-t border-border pt-3">

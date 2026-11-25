@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { notFound } from "next/navigation";
 
-import { AppHeader } from "@/components/AppHeader";
 import { BackLink, PageShell } from "@/components/PageShell";
 import { dealImageUrl, fetchDeal, formatBudget, formatPct } from "@/lib/api";
 
@@ -37,11 +36,8 @@ export default async function DealPage({ params }: DealPageProps) {
     deal.setup_items?.reduce((sum, item) => sum + (item.cost ?? 0), 0) ?? null;
 
   return (
-    <div className="min-h-dvh bg-background">
-      <AppHeader />
-
-      <PageShell width="detail">
-        <BackLink href="/deals" label="Deals" />
+    <PageShell width="detail">
+      <BackLink href="/deals" label="Deals" />
 
         <div className="mt-4 grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-stretch">
           <section className="h-full rounded-[14px] border border-border/80 bg-surface p-6 shadow-[var(--shadow-card)]">
@@ -57,11 +53,10 @@ export default async function DealPage({ params }: DealPageProps) {
             </div>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-[13px] tabular-nums text-foreground-muted">{deal.id}</p>
-                <h1 className="mt-1 text-[22px] font-medium tracking-tight text-foreground md:text-[26px]">
+                <h1 className="text-[22px] font-medium tracking-tight text-foreground md:text-[26px]">
                   {deal.address ?? "Deal"}
                 </h1>
-                <p className="mt-1 flex items-center gap-1.5 text-[14px] text-foreground-muted">
+                <p className="mt-1.5 flex items-center gap-1.5 text-[14px] text-foreground-muted">
                   <MapPin size={14} className="shrink-0" aria-hidden />
                   {location}
                 </p>
@@ -192,9 +187,8 @@ export default async function DealPage({ params }: DealPageProps) {
               )}
             </section>
           </aside>
-        </div>
-      </PageShell>
-    </div>
+      </div>
+    </PageShell>
   );
 }
 
