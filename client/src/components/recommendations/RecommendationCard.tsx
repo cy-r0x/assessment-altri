@@ -4,7 +4,7 @@ import { useState, useTransition, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ThumbsDown, ThumbsUp } from "lucide-react";
+import { Bath, BedDouble, Home, MapPin, ThumbsDown, ThumbsUp } from "lucide-react";
 
 import { dealImageUrl, formatBudget, formatCoc, postFeedback } from "@/lib/api";
 import type { Recommendation } from "@/lib/types";
@@ -28,7 +28,8 @@ export function RecommendationCard({
   const [error, setError] = useState<string | null>(null);
 
   const { deal, market, metrics } = rec;
-  const marketLabel = market.name || [deal.city, deal.state].filter(Boolean).join(", ") || null;
+  const location =
+    market.name || [deal.city, deal.state].filter(Boolean).join(", ") || "—";
   const setting = market.setting ? titleCase(market.setting) : null;
   const mid = metrics.coc.mid;
   const midTone =
@@ -43,7 +44,6 @@ export function RecommendationCard({
   function submit(next: "up" | "down") {
     if (pending) return;
     const previous = reaction;
-    // Same reaction again → optimistic undo; otherwise overwrite/create.
     const optimistic = previous === next ? null : next;
     setReaction(optimistic);
     setError(null);
@@ -82,6 +82,7 @@ export function RecommendationCard({
           className="object-cover"
           preload={rank <= 3}
         />
+
         <span
           className={`absolute left-3 top-3 inline-flex items-center rounded-full px-2 py-0.5 text-[12px] font-medium tabular-nums ${
             rank === 1
@@ -119,39 +120,30 @@ export function RecommendationCard({
           </FeedbackButton>
         </div>
 
+        <span className="absolute bottom-3 left-3 rounded-[8px] bg-foreground/90 px-2.5 py-1 text-[15px] font-medium tabular-nums text-primary-foreground">
+          {formatBudget(deal.purchase_price)}
+        </span>
+
         {error ? (
-          <p className="absolute bottom-3 left-3 right-3 rounded-[8px] bg-surface/95 px-2 py-1 text-[11px] text-danger shadow-sm">
+          <p className="absolute bottom-3 right-3 max-w-[55%] rounded-[8px] bg-surface/95 px-2 py-1 text-[11px] text-danger shadow-sm">
             {error}
           </p>
         ) : null}
       </div>
 
-      <div className="flex flex-1 flex-col gap-3 p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 flex-col gap-1">
-            {marketLabel ? (
-              <span className="min-w-0 truncate text-[13px] text-foreground-muted">
-                {marketLabel}
-                {setting ? ` · ${setting}` : ""}
-              </span>
-            ) : null}
-            <p className="truncate text-[15px] font-medium text-foreground">
-              {deal.address ?? deal.id}
-            </p>
-            <p className="text-[13px] tabular-nums text-foreground-subtle">
-              {deal.id} · {deal.bedrooms ?? "—"} bd · {deal.baths ?? "—"} ba
-              {deal.turnkey != null ? ` · ${deal.turnkey ? "Turnkey" : "Needs work"}` : ""}
-            </p>
-          </div>
-          <div className="shrink-0 text-right">
-            <p className="text-[15px] font-medium tabular-nums text-foreground">
-              {formatBudget(deal.purchase_price)}
-            </p>
-            <p className="text-[12px] text-foreground-subtle">list price</p>
-          </div>
-        </div>
+      <div className="flex flex-1 flex-col gap-1 px-4 pb-4 pt-3">
+        <p className="truncate text-[16px] font-medium text-foreground">
+          {deal.address ?? "Deal"}
+        </p>
+        <p className="flex items-center gap-1.5 text-[13px] text-foreground-muted">
+          <MapPin size={14} className="shrink-0" />
+          <span className="truncate">
+            {location}
+            {setting ? ` · ${setting}` : ""}
+          </span>
+        </p>
 
-        <div className="flex items-center gap-4 border-t border-border pt-3">
+        <div className="mt-3 flex items-center gap-4 border-t border-border pt-3">
           <div className="shrink-0">
             <p className={`text-[24px] leading-none font-medium tabular-nums ${midTone}`}>
               {formatCoc(mid)}
@@ -163,7 +155,7 @@ export function RecommendationCard({
           </div>
         </div>
 
-        <dl className="grid grid-cols-2 gap-3">
+        <dl className="mt-3 grid grid-cols-2 gap-3">
           <div className="min-w-0">
             <dt className="text-[12px] text-foreground-muted">Cash needed</dt>
             <dd className="text-[15px] font-medium tabular-nums text-foreground">
@@ -181,8 +173,40 @@ export function RecommendationCard({
             </dd>
           </div>
         </dl>
+
+        <dl className="mt-3 grid grid-cols-3 divide-x divide-border border-t border-border pt-3">
+          <Spec icon={<BedDouble size={14} />} label="Beds" value={deal.bedrooms} />
+          <Spec icon={<Bath size={14} />} label="Baths" value={deal.baths} />
+          <Spec
+            icon={<Home size={14} />}
+            label="Status"
+            value={
+              deal.turnkey == null ? "—" : deal.turnkey ? "Turnkey" : "Needs work"
+            }
+          />
+        </dl>
       </div>
     </Link>
+  );
+}
+
+function Spec({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string | number | null;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-0.5 px-2 text-center">
+      <dd className="text-[16px] font-medium tabular-nums text-foreground">{value ?? "—"}</dd>
+      <dt className="inline-flex items-center gap-1 text-[12px] text-foreground-muted">
+        {icon}
+        {label}
+      </dt>
+    </div>
   );
 }
 

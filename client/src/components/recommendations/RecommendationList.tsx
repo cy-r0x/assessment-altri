@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 import { RecommendationCard } from "@/components/recommendations/RecommendationCard";
-import { formatFocus } from "@/lib/api";
 import type { FeedbackItem, RecommendationsResponse } from "@/lib/types";
 
 type RecommendationListProps = {
@@ -23,22 +22,15 @@ function latestReactions(feedback: FeedbackItem[] | undefined): Map<string, "up"
 }
 
 export function RecommendationList({ data, feedback }: RecommendationListProps) {
-  const { recommendations, excluded, main_focus, client_id } = data;
+  const { recommendations, excluded, client_id } = data;
   const reactions = latestReactions(feedback);
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-2 border-b border-border pb-4">
-        <div>
-          <h2 className="text-[18px] font-medium tracking-tight text-foreground">
-            Recommendations
-          </h2>
-          <p className="mt-0.5 text-[14px] text-foreground-muted">
-            <span className="tabular-nums">{recommendations.length}</span> ranked ·{" "}
-            <span className="tabular-nums">{excluded.length}</span> excluded · ranked for{" "}
-            {formatFocus(main_focus)}
-          </p>
-        </div>
+      <div className="mb-4 text-center">
+        <h2 className="text-[28px] font-medium tracking-tight text-foreground md:text-[32px]">
+          Recommendations
+        </h2>
       </div>
 
       {recommendations.length === 0 ? (
