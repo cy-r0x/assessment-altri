@@ -202,7 +202,9 @@ class ClientService:
         finally:
             session.close()
 
-    def get_recommendations(self, client_id: str):
+    def get_recommendations(self, client_id: str, page: int = 1, limit: int = 6):
+        page = max(page, 1)
+        limit = min(max(limit, 1), 100)
         session = self.db.get_session()
         try:
             client = session.get(Client, client_id)
@@ -295,11 +297,24 @@ class ClientService:
             for row in recommendations:
                 row.pop("_sort", None)
 
+            total = len(recommendations)
+            total_pages = ceil(total / limit) if limit else 0
+            offset = (page - 1) * limit
+            page_items = recommendations[offset : offset + limit]
+
             return {
-                "client_id": client_id,
-                "main_focus": client.main_focus,
-                "recommendations": recommendations,
-                "excluded": excluded,
+                "data": {
+                    "client_id": client_id,
+                    "main_focus": client.main_focus,
+                    "recommendations": page_items,
+                    "excluded": excluded,
+                },
+                "pagination": {
+                    "page": page,
+                    "limit": limit,
+                    "total": total,
+                    "total_pages": total_pages,
+                },
             }
         finally:
             session.close()

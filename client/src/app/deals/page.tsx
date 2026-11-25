@@ -1,36 +1,17 @@
 import { Suspense } from "react";
 
 import { AppHeader } from "@/components/AppHeader";
+import { DealsPageSkeleton } from "@/components/deals/DealList";
 import { DealsMaster } from "@/components/deals/DealsMaster";
 
-type DealsPageProps = {
-  searchParams: Promise<{ page?: string }>;
-};
-
-export default function DealsPage({ searchParams }: DealsPageProps) {
+export default function DealsPage() {
   return (
     <div className="min-h-dvh bg-background">
       <AppHeader />
 
-      <Suspense
-        fallback={
-          <div className="mx-auto max-w-[1760px] px-6 py-10 text-[15px] text-foreground-muted md:px-10">
-            Loading deals…
-          </div>
-        }
-      >
-        <DealsPane searchParams={searchParams} />
+      <Suspense fallback={<DealsPageSkeleton />}>
+        <DealsMaster page={1} />
       </Suspense>
     </div>
   );
-}
-
-async function DealsPane({
-  searchParams,
-}: {
-  searchParams: Promise<{ page?: string }>;
-}) {
-  const params = await searchParams;
-  const page = Math.max(1, Number(params.page) || 1);
-  return <DealsMaster page={page} />;
 }

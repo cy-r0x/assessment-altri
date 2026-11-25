@@ -49,7 +49,7 @@ export default async function ClientPage({ params }: ClientPageProps) {
 
   const [clientSettled, recommendationsSettled] = await Promise.allSettled([
     fetchClient(id),
-    fetchRecommendations(id),
+    fetchRecommendations(id, 1, 6),
   ]);
 
   if (clientSettled.status === "rejected") {
@@ -58,7 +58,7 @@ export default async function ClientPage({ params }: ClientPageProps) {
 
   const { profile, feedback } = clientSettled.value.data;
   const recommendations =
-    recommendationsSettled.status === "fulfilled" ? recommendationsSettled.value.data : null;
+    recommendationsSettled.status === "fulfilled" ? recommendationsSettled.value : null;
   const activeFeedback = latestFeedback(feedback);
   const budgetLabel = formatBudget(profile.budget);
   const focusLabel = formatFocus(profile.main_focus);
@@ -209,7 +209,11 @@ export default async function ClientPage({ params }: ClientPageProps) {
 
         <section className="relative mt-8">
           {recommendations ? (
-            <RecommendationList data={recommendations} feedback={activeFeedback} />
+            <RecommendationList
+              data={recommendations.data}
+              pagination={recommendations.pagination}
+              feedback={activeFeedback}
+            />
           ) : (
             <div className="rounded-[14px] border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
               <h2 className="text-[16px] font-medium text-foreground">Recommendations</h2>

@@ -2,10 +2,10 @@ import { DealList } from "@/components/deals/DealList";
 import { fetchDeals } from "@/lib/api";
 
 type DealsMasterProps = {
-  page: number;
+  page?: number;
 };
 
-export async function DealsMaster({ page }: DealsMasterProps) {
+export async function DealsMaster({ page = 1 }: DealsMasterProps) {
   const result = await fetchDeals(page, 12);
   const pagination = result.pagination ?? {
     page,

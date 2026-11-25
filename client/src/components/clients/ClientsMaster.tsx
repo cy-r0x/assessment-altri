@@ -2,14 +2,14 @@ import { ClientList } from "@/components/clients/ClientList";
 import { fetchClients } from "@/lib/api";
 
 type ClientsMasterProps = {
-  page: number;
+  page?: number;
 };
 
-export async function ClientsMaster({ page }: ClientsMasterProps) {
+export async function ClientsMaster({ page = 1 }: ClientsMasterProps) {
   const result = await fetchClients(page, 12);
   const pagination = result.pagination ?? {
     page,
-    limit: 8,
+    limit: 12,
     total: result.data.length,
     total_pages: 1,
   };

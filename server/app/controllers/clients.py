@@ -30,9 +30,15 @@ def get_client(client_id: str):
 
 
 @router.get("/clients/{client_id}/recommendations")
-def get_recommendations(client_id: str):
+def get_recommendations(
+    client_id: str,
+    page: int = Query(1, ge=1),
+    limit: int = Query(6, ge=1, le=100),
+):
     """Ranked deals + excluded deals with the rule each broke."""
+    result = client_service.get_recommendations(client_id, page=page, limit=limit)
     return success(
         "Recommendations fetched successfully",
-        client_service.get_recommendations(client_id),
+        result["data"],
+        pagination=result["pagination"],
     )

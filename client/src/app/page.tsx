@@ -1,36 +1,17 @@
 import { Suspense } from "react";
 
 import { AppHeader } from "@/components/AppHeader";
+import { ClientsPageSkeleton } from "@/components/clients/ClientList";
 import { ClientsMaster } from "@/components/clients/ClientsMaster";
 
-type HomeProps = {
-  searchParams: Promise<{ page?: string }>;
-};
-
-export default function Home({ searchParams }: HomeProps) {
+export default function Home() {
   return (
     <div className="min-h-dvh bg-background">
       <AppHeader />
 
-      <Suspense
-        fallback={
-          <div className="mx-auto max-w-[1760px] px-6 py-10 text-[15px] text-foreground-muted md:px-10">
-            Loading clients…
-          </div>
-        }
-      >
-        <ClientsPane searchParams={searchParams} />
+      <Suspense fallback={<ClientsPageSkeleton />}>
+        <ClientsMaster page={1} />
       </Suspense>
     </div>
   );
-}
-
-async function ClientsPane({
-  searchParams,
-}: {
-  searchParams: Promise<{ page?: string }>;
-}) {
-  const params = await searchParams;
-  const page = Math.max(1, Number(params.page) || 1);
-  return <ClientsMaster page={page} />;
 }

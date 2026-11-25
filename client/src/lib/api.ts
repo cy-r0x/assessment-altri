@@ -48,8 +48,12 @@ export async function fetchClient(clientId: string): Promise<ApiSuccess<ClientDe
 
 export async function fetchRecommendations(
   clientId: string,
+  page = 1,
+  limit = 6,
 ): Promise<ApiSuccess<RecommendationsResponse>> {
   const url = new URL(`/api/v1/clients/${clientId}/recommendations`, API_URL);
+  url.searchParams.set("page", String(page));
+  url.searchParams.set("limit", String(limit));
   const res = await fetch(url, {
     cache: "no-store",
   });
