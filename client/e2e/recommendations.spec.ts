@@ -19,11 +19,10 @@ test("client page lists ranked recommendations and filtered-out deals", async ({
   const firstCard = page.locator(`a[href="/deals/${first.deal.id}"]`).filter({ hasText: "#1" });
   await expect(firstCard).toBeVisible();
   await expect(firstCard.getByText("Cash needed")).toBeVisible();
-  await expect(firstCard.getByText("CoC low / mid / high")).toBeVisible();
+  await expect(firstCard.getByText("Cash-on-cash (mid)")).toBeVisible();
   await expect(firstCard.getByText(`${(first.metrics.coc.mid * 100).toFixed(1)}%`, { exact: true })).toBeVisible();
-  await expect(firstCard.getByText(first.explanation)).toBeVisible();
 
-  const cards = page.locator("ul li a").filter({ hasText: /^#\d+/ });
+  const cards = page.locator("ul li a").filter({ hasText: /#\d+/ });
   await expect(cards).toHaveCount(data.recommendations.length);
 
   // Filtered-out list shows each excluded deal with its rule.

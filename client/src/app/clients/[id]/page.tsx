@@ -47,11 +47,6 @@ export default async function ClientPage({ params }: ClientPageProps) {
       <AppHeader />
 
       <main className="relative mx-auto w-full max-w-[1400px] px-6 pb-12 pt-5 md:px-10">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 -top-6 h-48 bg-[radial-gradient(ellipse_at_top,_rgba(255,56,92,0.06),_transparent_60%)]"
-        />
-
         <Link
           href="/"
           className="relative inline-flex items-center gap-1.5 text-[13px] font-medium text-foreground-muted transition-colors hover:text-foreground"
