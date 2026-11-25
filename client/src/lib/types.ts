@@ -2,6 +2,7 @@ export type ClientSummary = {
   id: string;
   name: string | null;
   budget: number | null;
+  budget_range: string | null;
   budget_flexibility: string | null;
   main_focus: string | null;
   market_preferences: string[] | null;
@@ -10,7 +11,6 @@ export type ClientSummary = {
 };
 
 export type ClientProfile = ClientSummary & {
-  budget_range: string | null;
   down_payment_pct: number | null;
   cohost_fee_pct: number | null;
   avoid_markets: string[] | null;

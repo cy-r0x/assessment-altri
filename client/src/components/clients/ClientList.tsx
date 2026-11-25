@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BedDouble, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 
 import { ClientAvatar } from "@/components/clients/ClientAvatar";
 import { formatBudget, formatFocus } from "@/lib/api";
@@ -9,6 +9,11 @@ type ClientListProps = {
   clients: ClientSummary[];
   pagination: Pagination;
 };
+
+function clientBudgetLabel(client: ClientSummary): string {
+  if (client.budget_range) return client.budget_range;
+  return formatBudget(client.budget);
+}
 
 export function ClientList({ clients, pagination }: ClientListProps) {
   const { page, total_pages, total } = pagination;
@@ -36,27 +41,20 @@ export function ClientList({ clients, pagination }: ClientListProps) {
             <li key={client.id}>
               <Link
                 href={`/clients/${client.id}`}
-                className="flex h-full items-center gap-3.5 rounded-[14px] border border-border bg-surface px-3.5 py-3.5 transition-[box-shadow,border-color,transform] duration-150 hover:-translate-y-px hover:border-border-strong hover:shadow-[var(--shadow-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex h-full items-center gap-4 rounded-[14px] border border-border bg-surface px-3.5 py-3.5 transition-[box-shadow,border-color,transform] duration-150 hover:-translate-y-px hover:border-border-strong hover:shadow-[var(--shadow-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <ClientAvatar id={client.id} size="md" />
+                <ClientAvatar id={client.id} size="xl" />
                 <div className="min-w-0 flex-1 space-y-1.5">
                   <div className="flex items-baseline justify-between gap-3">
                     <p className="truncate text-[15px] font-medium text-foreground">
                       {client.name ?? "Client"}
                     </p>
                     <p className="shrink-0 text-[15px] font-medium tabular-nums text-foreground">
-                      {formatBudget(client.budget)}
+                      {clientBudgetLabel(client)}
                     </p>
                   </div>
-                  <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-foreground-muted">
-                    <span>{formatFocus(client.main_focus)}</span>
-                    <span className="text-border-strong">·</span>
-                    <span className="inline-flex items-center gap-1">
-                      <BedDouble size={13} />
-                      <span className="tabular-nums">
-                        {client.min_bedrooms ?? "—"}+
-                      </span>
-                    </span>
+                  <p className="text-[13px] text-foreground-muted">
+                    {formatFocus(client.main_focus)}
                   </p>
                   <p className="flex items-center gap-1.5 text-[13px] text-foreground-subtle">
                     <MapPin size={13} className="shrink-0" />

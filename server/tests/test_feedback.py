@@ -3,15 +3,25 @@ from datetime import date
 import pytest
 
 from app.core import AppError
-from app.db.models import Client, Deal
+from app.db.models import Client, Deal, Feedback
 from app.service.feedback import FeedbackService
 
 
+class _ScalarResult:
+    def __init__(self, rows):
+        self._rows = rows
+
+    def all(self):
+        return list(self._rows)
+
+
 class _Session:
-    def __init__(self, clients: dict, deals: dict):
+    def __init__(self, clients: dict, deals: dict, feedback: list[Feedback] | None = None):
         self.clients = clients
         self.deals = deals
+        self.feedback = list(feedback or [])
         self.added = []
+        self.deleted = []
         self.committed = False
         self.closed = False
         self._next_id = 70
@@ -23,8 +33,45 @@ class _Session:
             return self.deals.get(key)
         return None
 
+    def scalars(self, statement):
+        # Tests only query Feedback by client_id + deal_id.
+        rows = sorted(
+            self.feedback,
+            key=lambda row: (
+                row.created_at or date.min,
+                row.id or 0,
+            ),
+            reverse=True,
+        )
+        # Filter to matching client/deal if the statement carries those values.
+        where = getattr(statement, "_where_criteria", ())
+        client_id = deal_id = None
+        for criterion in where:
+            left = getattr(criterion, "left", None)
+            right = getattr(criterion, "right", None)
+            key = getattr(left, "key", None) or getattr(left, "name", None)
+            value = getattr(right, "value", right)
+            if key == "client_id":
+                client_id = value
+            if key == "deal_id":
+                deal_id = value
+        if client_id is not None or deal_id is not None:
+            rows = [
+                row
+                for row in rows
+                if (client_id is None or row.client_id == client_id)
+                and (deal_id is None or row.deal_id == deal_id)
+            ]
+        return _ScalarResult(rows)
+
     def add(self, row):
         self.added.append(row)
+        self.feedback.append(row)
+
+    def delete(self, row):
+        self.deleted.append(row)
+        if row in self.feedback:
+            self.feedback.remove(row)
 
     def commit(self):
         self.committed = True
@@ -51,10 +98,11 @@ class _DB:
         return self.session
 
 
-def _service():
+def _service(feedback: list[Feedback] | None = None):
     session = _Session(
         clients={"C-07": Client(id="C-07", name="Priya S.")},
         deals={"D-104": Deal(id="D-104", city="East Stroudsburg")},
+        feedback=feedback,
     )
     return FeedbackService(db=_DB(session)), session
 
@@ -73,6 +121,7 @@ def test_create_feedback_persists_thumbs_down_with_comment():
 
     assert session.committed
     assert session.closed
+    assert saved["action"] == "created"
     assert saved["id"] == 70
     assert saved["client_id"] == "C-07"
     assert saved["deal_id"] == "D-104"
@@ -90,6 +139,7 @@ def test_create_feedback_blank_comment_is_stored_as_null():
 
     assert saved["reaction"] == "up"
     assert saved["comment"] is None
+    assert saved["action"] == "created"
 
 
 def test_create_feedback_unknown_client():
@@ -116,3 +166,92 @@ def test_create_feedback_unknown_deal():
     assert exc.value.status_code == 404
     assert "Deal not found" in exc.value.message
     assert session.added == []
+
+
+def test_same_reaction_undoes_existing_feedback():
+    existing = Feedback(
+        id=12,
+        client_id="C-07",
+        deal_id="D-104",
+        reaction="up",
+        comment=None,
+        created_at=date(2026, 11, 1),
+    )
+    service, session = _service([existing])
+
+    result = service.create_feedback(
+        {"client_id": "C-07", "deal_id": "D-104", "reaction": "up"}
+    )
+
+    assert result == {
+        "action": "undone",
+        "client_id": "C-07",
+        "deal_id": "D-104",
+    }
+    assert existing in session.deleted
+    assert session.feedback == []
+    assert session.committed
+
+
+def test_different_reaction_overwrites_existing_feedback():
+    existing = Feedback(
+        id=12,
+        client_id="C-07",
+        deal_id="D-104",
+        reaction="up",
+        comment="Liked it",
+        created_at=date(2026, 11, 1),
+    )
+    service, session = _service([existing])
+
+    saved = service.create_feedback(
+        {"client_id": "C-07", "deal_id": "D-104", "reaction": "down"}
+    )
+
+    assert saved["action"] == "updated"
+    assert saved["id"] == 12
+    assert saved["reaction"] == "down"
+    assert existing.reaction == "down"
+    assert session.added == []
+    assert session.deleted == []
+    assert len(session.feedback) == 1
+
+
+def test_overwrite_collapses_duplicate_rows():
+    rows = [
+        Feedback(
+            id=20,
+            client_id="C-07",
+            deal_id="D-104",
+            reaction="up",
+            comment=None,
+            created_at=date(2026, 11, 25),
+        ),
+        Feedback(
+            id=19,
+            client_id="C-07",
+            deal_id="D-104",
+            reaction="up",
+            comment=None,
+            created_at=date(2026, 11, 25),
+        ),
+        Feedback(
+            id=18,
+            client_id="C-07",
+            deal_id="D-104",
+            reaction="down",
+            comment=None,
+            created_at=date(2026, 10, 1),
+        ),
+    ]
+    service, session = _service(rows)
+
+    saved = service.create_feedback(
+        {"client_id": "C-07", "deal_id": "D-104", "reaction": "down"}
+    )
+
+    assert saved["action"] == "updated"
+    assert saved["id"] == 20
+    assert saved["reaction"] == "down"
+    assert len(session.feedback) == 1
+    assert {row.id for row in session.deleted} == {19, 18}

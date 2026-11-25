@@ -150,7 +150,7 @@ export default async function ClientPage({ params }: ClientPageProps) {
 
         <section className="relative mt-8">
           {recommendations ? (
-            <RecommendationList data={recommendations} />
+            <RecommendationList data={recommendations} feedback={feedback} />
           ) : (
             <div className="rounded-[14px] border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
               <h2 className="text-[16px] font-medium text-foreground">Recommendations</h2>

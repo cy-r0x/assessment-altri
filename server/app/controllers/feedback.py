@@ -16,8 +16,11 @@ class FeedbackCreate(BaseModel):
 
 @router.post("/feedback")
 def create_feedback(payload: FeedbackCreate):
-    """Record a thumbs up or down with an optional comment."""
-    return success(
-        "Feedback recorded successfully",
-        feedback_service.create_feedback(payload.model_dump()),
-    )
+    """Upsert thumbs: create, overwrite, or undo if the same reaction is posted again."""
+    result = feedback_service.create_feedback(payload.model_dump())
+    action = result.get("action")
+    if action == "undone":
+        return success("Feedback removed successfully", result)
+    if action == "updated":
+        return success("Feedback updated successfully", result)
+    return success("Feedback recorded successfully", result)

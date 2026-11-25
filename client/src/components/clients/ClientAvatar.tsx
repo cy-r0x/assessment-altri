@@ -21,14 +21,15 @@ export function toneFor(id: string): string {
 
 type ClientAvatarProps = {
   id: string;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
   className?: string;
 };
 
 const SIZES = {
   sm: { box: "size-10", px: 40 },
-  md: { box: "size-14", px: 56 },
-  lg: { box: "size-20", px: 80 },
+  md: { box: "size-16", px: 64 },
+  lg: { box: "size-[4.5rem]", px: 72 },
+  xl: { box: "size-24", px: 96 },
 } as const;
 
 export function ClientAvatar({ id, size = "md", className = "" }: ClientAvatarProps) {

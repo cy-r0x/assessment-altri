@@ -1,8 +1,16 @@
-"""Persist a client's thumbs up or down on a deal."""
+"""Persist a client's thumbs up or down on a deal.
+
+One row per (client_id, deal_id):
+- same reaction again → undo (delete)
+- different reaction → overwrite
+- none yet → create
+"""
 
 from __future__ import annotations
 
 from datetime import date
+
+from sqlalchemy import select
 
 from app.core import AppError
 from app.db import Client, Database, Deal, Feedback, get_db_instance
@@ -40,6 +48,35 @@ class FeedbackService:
             if session.get(Deal, deal_id) is None:
                 raise AppError("Deal not found", status_code=404)
 
+            existing = list(
+                session.scalars(
+                    select(Feedback)
+                    .where(Feedback.client_id == client_id, Feedback.deal_id == deal_id)
+                    .order_by(Feedback.created_at.desc(), Feedback.id.desc())
+                ).all()
+            )
+
+            if existing:
+                latest = existing[0]
+                # Same reaction → undo every row for this pair.
+                if latest.reaction == reaction:
+                    for row in existing:
+                        session.delete(row)
+                    session.commit()
+                    return {"action": "undone", "client_id": client_id, "deal_id": deal_id}
+
+                # Different reaction → keep one row, overwrite, drop duplicates.
+                keep = latest
+                for row in existing[1:]:
+                    session.delete(row)
+                keep.reaction = reaction
+                if comment is not None:
+                    keep.comment = comment
+                keep.created_at = date.today()
+                session.commit()
+                session.refresh(keep)
+                return {**keep.to_dict(), "action": "updated"}
+
             row = Feedback(
                 client_id=client_id,
                 deal_id=deal_id,
@@ -50,7 +87,7 @@ class FeedbackService:
             session.add(row)
             session.commit()
             session.refresh(row)
-            return row.to_dict()
+            return {**row.to_dict(), "action": "created"}
         except AppError:
             session.rollback()
             raise

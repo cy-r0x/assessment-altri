@@ -36,6 +36,7 @@ class Client(Base):
             "id": self.id,
             "name": self.name,
             "budget": float(self.budget) if self.budget is not None else None,
+            "budget_range": self.budget_range,
             "budget_flexibility": self.budget_flexibility,
             "main_focus": self.main_focus,
             "market_preferences": self.market_preferences,
@@ -46,7 +47,6 @@ class Client(Base):
     def to_profile(self) -> dict[str, Any]:
         return {
             **self.to_summary(),
-            "budget_range": self.budget_range,
             "down_payment_pct": float(self.down_payment_pct)
             if self.down_payment_pct is not None
             else None,

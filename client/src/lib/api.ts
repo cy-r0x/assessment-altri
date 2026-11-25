@@ -4,8 +4,16 @@ import type {
   ClientSummary,
   DealDetail,
   DealSummary,
+  FeedbackItem,
   RecommendationsResponse,
 } from "@/lib/types";
+
+export type FeedbackCreatePayload = {
+  client_id: string;
+  deal_id: string;
+  reaction: "up" | "down";
+  comment?: string | null;
+};
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 
@@ -77,6 +85,29 @@ export async function fetchDeal(dealId: string): Promise<ApiSuccess<DealDetail>>
 
   if (!res.ok) {
     throw new Error(`Failed to load deal (${res.status})`);
+  }
+
+  return res.json();
+}
+
+export type FeedbackMutationResult = (FeedbackItem & { action?: string }) | {
+  action: "undone";
+  client_id: string;
+  deal_id: string;
+};
+
+export async function postFeedback(
+  payload: FeedbackCreatePayload,
+): Promise<ApiSuccess<FeedbackMutationResult>> {
+  const url = new URL("/api/v1/feedback", API_URL);
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to record feedback (${res.status})`);
   }
 
   return res.json();
