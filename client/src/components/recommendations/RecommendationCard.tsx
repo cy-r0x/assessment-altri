@@ -38,6 +38,7 @@ type RecommendationCardProps = {
   rank: number;
   initialReaction?: "up" | "down" | null;
   initialComment?: string | null;
+  onFeedbackChange?: () => void;
 };
 
 export function RecommendationCard({
@@ -46,6 +47,7 @@ export function RecommendationCard({
   rank,
   initialReaction = null,
   initialComment = null,
+  onFeedbackChange,
 }: RecommendationCardProps) {
   const router = useRouter();
   const commentFieldId = useId();
@@ -152,6 +154,7 @@ export function RecommendationCard({
           setReaction(result.data.reaction === "down" ? "down" : "up");
           setSavedComment(result.data.comment ?? null);
         }
+        onFeedbackChange?.();
         router.refresh();
       } catch {
         setReaction(previousReaction);

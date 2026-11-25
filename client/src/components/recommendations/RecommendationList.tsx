@@ -44,7 +44,7 @@ export function RecommendationList({
   feedback,
 }: RecommendationListProps) {
   const [recommendations, setRecommendations] = useState(initialData.recommendations);
-  const [excluded] = useState(initialData.excluded);
+  const [excluded, setExcluded] = useState(initialData.excluded);
   const clientId = initialData.client_id;
   const [pagination, setPagination] = useState<Pagination>(
     initialPagination ?? {
@@ -61,18 +61,34 @@ export function RecommendationList({
   const { page, total_pages } = pagination;
   const rankOffset = (page - 1) * pagination.limit;
 
-  function goToPage(nextPage: number) {
-    if (pending || nextPage < 1 || nextPage > total_pages || nextPage === page) return;
+  function applyResult(
+    result: Awaited<ReturnType<typeof fetchRecommendations>>,
+  ) {
+    setRecommendations(result.data.recommendations);
+    setExcluded(result.data.excluded);
+    if (result.pagination) setPagination(result.pagination);
+  }
+
+  function reload(nextPage = page) {
     setError(null);
     startTransition(async () => {
       try {
         const result = await fetchRecommendations(clientId, nextPage, PAGE_SIZE);
-        setRecommendations(result.data.recommendations);
-        if (result.pagination) setPagination(result.pagination);
+        applyResult(result);
       } catch {
         setError("Couldn’t load recommendations");
       }
     });
+  }
+
+  function goToPage(nextPage: number) {
+    if (pending || nextPage < 1 || nextPage > total_pages || nextPage === page) return;
+    reload(nextPage);
+  }
+
+  function onFeedbackChange() {
+    // Dislike may remove a card; reload page 1 so ranks + filtered-out stay in sync.
+    reload(1);
   }
 
   return (
@@ -114,6 +130,7 @@ export function RecommendationList({
                         rank={rankOffset + index + 1}
                         initialReaction={prior?.reaction ?? null}
                         initialComment={prior?.comment ?? null}
+                        onFeedbackChange={onFeedbackChange}
                       />
                     </li>
                   );
@@ -136,7 +153,11 @@ export function RecommendationList({
         </>
       )}
 
-      <ExcludedDealsPanel excluded={excluded} />
+      <ExcludedDealsPanel
+        clientId={clientId}
+        excluded={excluded}
+        onChanged={() => reload(1)}
+      />
     </div>
   );
 }

@@ -2,9 +2,14 @@
 
 ## Still open
 
-1. **Feedback must change the next recommendations**  
-   Brief: *“New feedback changes the next set of recommendations.”*  
-   Thumbs up/down (+ comments) persist via `POST /feedback`, but `get_recommendations` does not read feedback when ranking or filtering. After a reaction, the ordered list should change (e.g. boost likes, demote/hide dislikes — exact policy is ours to choose and document).
+None. Part A functional gaps are closed.
+
+## Feedback → recommendations (done)
+
+- **Thumbs down** → deal soft-excluded into **Filtered out** with rule `Client disliked`
+- **Undo** from Filtered out (same `down` again, no comment field) → feedback row deleted → deal returns to ranked list
+- **Thumbs up** → deal boosted to front of recommendations
+- Comments unchanged (modal on reaction)
 
 ## Done (Part A checklist)
 
@@ -14,12 +19,13 @@
 | Deal math (cash needed, debt, CF, CoC) | Done + tests |
 | Hard filters (budget / avoid / beds / pencil) | Done + tests |
 | Rank by `main_focus` + explanation | Done + ranking tests |
+| Feedback changes next recommendations | Done + tests |
 | `GET /clients`, `/clients/{id}`, `/recommendations`, `POST /feedback` | Done |
 | Client summary UI | Done |
 | Ranked deals with cash needed + CoC L/M/H + explanation | Done |
-| Filtered-out list + reason | Done |
-| Thumbs up/down with optional comment; list refresh | Done (persist + UI; ranking not yet feedback-aware) |
-| Tests on deal math + hard filters / ranking | Done (`test_deal_math`, `test_feedback`, `test_recommendations`) |
+| Filtered-out list + reason (+ dislike undo) | Done |
+| Thumbs up/down with optional comment; list refresh | Done |
+| Tests on deal math + hard filters / ranking / feedback effects | Done |
 
 ## Not Part A (brief submission / Part B)
 

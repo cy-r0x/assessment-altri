@@ -226,6 +226,17 @@ class ClientService:
             deals = session.scalars(select(Deal).order_by(Deal.id)).all()
             markets = session.scalars(select(Market)).all()
 
+            # Latest reaction per deal — drives soft exclude (down) and boost (up).
+            feedback_rows = session.scalars(
+                select(Feedback)
+                .where(Feedback.client_id == client_id)
+                .order_by(Feedback.created_at.desc(), Feedback.id.desc())
+            ).all()
+            latest_reaction: dict[str, str] = {}
+            for row in feedback_rows:
+                if row.deal_id not in latest_reaction:
+                    latest_reaction[row.deal_id] = (row.reaction or "").strip().lower()
+
             budget_cap = _budget_cap(client)
             recommendations = []
             excluded = []
@@ -286,6 +297,14 @@ class ClientService:
                     )
                     continue
 
+                # Soft filter from feedback: dislike moves the deal to filtered-out.
+                # Undo (same reaction again) drops the row → deal returns here next load.
+                reaction = latest_reaction.get(deal.id)
+                if reaction == "down":
+                    excluded.append(_excluded_row(deal, "Client disliked"))
+                    continue
+
+                liked_first = 0 if reaction == "up" else 1
                 recommendations.append(
                     {
                         "deal": deal.to_summary(),
@@ -305,6 +324,7 @@ class ClientService:
                         },
                         "explanation": _explanation(client, deal, market, metrics),
                         "_sort": (
+                            liked_first,
                             _pref_boost(client, market, deal),
                             *_rank_key(client, deal, market, metrics),
                         ),

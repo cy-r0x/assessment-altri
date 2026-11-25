@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from app.db.models import Client, Deal, Market
+from datetime import date
+
+from app.db.models import Client, Deal, Feedback, Market
 from app.service.clients import (
     ClientService,
     _budget_cap,
@@ -32,10 +34,12 @@ class _Session:
         clients: dict[str, Client],
         deals: list[Deal],
         markets: list[Market],
+        feedback: list[Feedback] | None = None,
     ):
         self.clients = clients
         self.deals = deals
         self.markets = markets
+        self.feedback = list(feedback or [])
         self.closed = False
 
     def get(self, model, key):
@@ -49,6 +53,13 @@ class _Session:
             return _ScalarResult(self.deals)
         if entity is Market:
             return _ScalarResult(self.markets)
+        if entity is Feedback:
+            rows = sorted(
+                self.feedback,
+                key=lambda row: (row.created_at or date.min, row.id or 0),
+                reverse=True,
+            )
+            return _ScalarResult(rows)
         return _ScalarResult([])
 
     def close(self):
@@ -114,11 +125,17 @@ def _market(**overrides) -> Market:
     return Market(**defaults)
 
 
-def _service(client: Client, deals: list[Deal], markets: list[Market] | None = None):
+def _service(
+    client: Client,
+    deals: list[Deal],
+    markets: list[Market] | None = None,
+    feedback: list[Feedback] | None = None,
+):
     session = _Session(
         clients={client.id: client},
         deals=deals,
         markets=markets if markets is not None else [_market()],
+        feedback=feedback,
     )
     return ClientService(db=_DB(session)), session
 
@@ -334,3 +351,85 @@ def test_recommendations_rank_cash_flow_by_mid_coc():
     ids = [row["deal"]["id"] for row in result["data"]["recommendations"]]
     assert ids[:2] == ["D-strong", "D-weak"]
     assert all(row.get("explanation") for row in result["data"]["recommendations"])
+
+
+def test_dislike_moves_deal_to_filtered_out():
+    client = _client(
+        budget=1_000_000,
+        min_bedrooms=1,
+        market_preferences=["all"],
+        avoid_markets=[],
+    )
+    deal = _deal(id="D-down", purchase_price=150_000, setup_items=[])
+    feedback = [
+        Feedback(
+            id=1,
+            client_id="C-07",
+            deal_id="D-down",
+            reaction="down",
+            comment=None,
+            created_at=date(2026, 10, 1),
+        )
+    ]
+    service, _ = _service(client, [deal], feedback=feedback)
+
+    result = service.get_recommendations("C-07", page=1, limit=20)
+    assert result["data"]["recommendations"] == []
+    assert len(result["data"]["excluded"]) == 1
+    assert result["data"]["excluded"][0]["deal_id"] == "D-down"
+    assert "disliked" in result["data"]["excluded"][0]["rule"].lower()
+
+
+def test_removing_dislike_restores_deal_to_recommendations():
+    """Undo deletes feedback → next recommendations include the deal again."""
+    client = _client(
+        budget=1_000_000,
+        min_bedrooms=1,
+        market_preferences=["all"],
+        avoid_markets=[],
+    )
+    deal = _deal(id="D-back", purchase_price=150_000, setup_items=[])
+    service, _ = _service(client, [deal], feedback=[])
+
+    result = service.get_recommendations("C-07", page=1, limit=20)
+    ids = [row["deal"]["id"] for row in result["data"]["recommendations"]]
+    assert "D-back" in ids
+    assert not any(row["deal_id"] == "D-back" for row in result["data"]["excluded"])
+
+
+def test_like_boosts_deal_to_front():
+    client = _client(
+        budget=1_000_000,
+        min_bedrooms=1,
+        main_focus="cash_flow",
+        market_preferences=["all"],
+        avoid_markets=[],
+    )
+    stronger = _deal(
+        id="D-strong",
+        purchase_price=200_000,
+        revenue={"low": 70_000, "mid": 120_000, "high": 130_000},
+        annual_opex=15_000,
+        setup_items=[],
+    )
+    weaker = _deal(
+        id="D-liked",
+        purchase_price=200_000,
+        revenue={"low": 70_000, "mid": 75_000, "high": 80_000},
+        annual_opex=15_000,
+        setup_items=[],
+    )
+    feedback = [
+        Feedback(
+            id=1,
+            client_id="C-07",
+            deal_id="D-liked",
+            reaction="up",
+            created_at=date(2026, 10, 1),
+        )
+    ]
+    service, _ = _service(client, [stronger, weaker], feedback=feedback)
+
+    result = service.get_recommendations("C-07", page=1, limit=20)
+    ids = [row["deal"]["id"] for row in result["data"]["recommendations"]]
+    assert ids[0] == "D-liked"
