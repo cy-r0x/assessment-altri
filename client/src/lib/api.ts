@@ -82,6 +82,10 @@ export async function fetchDeal(dealId: string): Promise<ApiSuccess<DealDetail>>
   return res.json();
 }
 
+export function dealImageUrl(dealId: string, width = 800, height = 600): string {
+  return `https://picsum.photos/seed/${encodeURIComponent(dealId)}/${width}/${height}`;
+}
+
 export function formatBudget(value: number | null | undefined): string {
   if (value == null) return "—";
   return new Intl.NumberFormat("en-US", {

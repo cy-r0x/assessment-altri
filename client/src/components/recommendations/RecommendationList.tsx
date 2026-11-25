@@ -1,6 +1,7 @@
+import Image from "next/image";
 import Link from "next/link";
 
-import { formatBudget, formatCoc, formatFocus } from "@/lib/api";
+import { dealImageUrl, formatBudget, formatCoc, formatFocus } from "@/lib/api";
 import type { Recommendation, RecommendationsResponse } from "@/lib/types";
 
 type RecommendationListProps = {
@@ -66,8 +67,7 @@ export function RecommendationList({ data }: RecommendationListProps) {
 
 function RecommendationCard({ rec, rank }: { rec: Recommendation; rank: number }) {
   const { deal, market, metrics } = rec;
-  const marketLabel =
-    market.name || [deal.city, deal.state].filter(Boolean).join(", ") || null;
+  const marketLabel = market.name || [deal.city, deal.state].filter(Boolean).join(", ") || null;
   const setting = market.setting ? titleCase(market.setting) : null;
   const mid = metrics.coc.mid;
   const midTone =
@@ -82,73 +82,83 @@ function RecommendationCard({ rec, rank }: { rec: Recommendation; rank: number }
   return (
     <Link
       href={`/deals/${deal.id}`}
-      className="flex h-full flex-col gap-3 rounded-[14px] border border-border bg-surface p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-[box-shadow,border-color,transform] duration-150 hover:-translate-y-px hover:border-border-strong hover:shadow-[var(--shadow-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="flex h-full flex-col overflow-hidden rounded-[14px] border border-border bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-[box-shadow,border-color,transform] duration-150 hover:-translate-y-px hover:border-border-strong hover:shadow-[var(--shadow-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-col gap-1">
-          <div className="flex min-w-0 items-center gap-2">
-            <span
-              className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[12px] font-medium tabular-nums ${
-                rank === 1
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-surface-muted text-foreground"
-              }`}
-            >
-              #{rank}
-            </span>
+      <div className="relative aspect-[4/3] w-full bg-surface-muted">
+        <Image
+          src={dealImageUrl(deal.id)}
+          alt={`Photo of ${deal.address ?? deal.id}`}
+          fill
+          sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
+          className="object-cover"
+          preload={rank <= 3}
+        />
+        <span
+          className={`absolute left-3 top-3 inline-flex items-center rounded-full px-2 py-0.5 text-[12px] font-medium tabular-nums ${
+            rank === 1
+              ? "bg-primary text-primary-foreground"
+              : "bg-surface text-foreground shadow-sm"
+          }`}
+        >
+          #{rank}
+        </span>
+      </div>
+      <div className="flex flex-1 flex-col gap-3 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 flex-col gap-1">
             {marketLabel ? (
               <span className="min-w-0 truncate text-[13px] text-foreground-muted">
                 {marketLabel}
                 {setting ? ` · ${setting}` : ""}
               </span>
             ) : null}
+            <p className="truncate text-[15px] font-medium text-foreground">
+              {deal.address ?? deal.id}
+            </p>
+            <p className="text-[13px] tabular-nums text-foreground-subtle">
+              {deal.id} · {deal.bedrooms ?? "—"} bd · {deal.baths ?? "—"} ba
+              {deal.turnkey != null ? ` · ${deal.turnkey ? "Turnkey" : "Needs work"}` : ""}
+            </p>
           </div>
-          <p className="truncate text-[15px] font-medium text-foreground">
-            {deal.address ?? deal.id}
-          </p>
-          <p className="text-[13px] tabular-nums text-foreground-subtle">
-            {deal.id} · {deal.bedrooms ?? "—"} bd · {deal.baths ?? "—"} ba
-            {deal.turnkey != null ? ` · ${deal.turnkey ? "Turnkey" : "Needs work"}` : ""}
-          </p>
+          <div className="shrink-0 text-right">
+            <p className="text-[15px] font-medium tabular-nums text-foreground">
+              {formatBudget(deal.purchase_price)}
+            </p>
+            <p className="text-[12px] text-foreground-subtle">list price</p>
+          </div>
         </div>
-        <div className="shrink-0 text-right">
-          <p className="text-[15px] font-medium tabular-nums text-foreground">
-            {formatBudget(deal.purchase_price)}
-          </p>
-          <p className="text-[12px] text-foreground-subtle">list price</p>
-        </div>
-      </div>
 
-      <div className="flex items-center gap-4 border-t border-border pt-3">
-        <div className="shrink-0">
-          <p className={`text-[24px] leading-none font-medium tabular-nums ${midTone}`}>
-            {formatCoc(mid)}
-          </p>
-          <p className="mt-1 text-[12px] text-foreground-muted">Cash-on-cash (mid)</p>
+        <div className="flex items-center gap-4 border-t border-border pt-3">
+          <div className="shrink-0">
+            <p className={`text-[24px] leading-none font-medium tabular-nums ${midTone}`}>
+              {formatCoc(mid)}
+            </p>
+            <p className="mt-1 text-[12px] text-foreground-muted">Cash-on-cash (mid)</p>
+          </div>
+          <div className="min-w-0 flex-1">
+            <CocRange low={metrics.coc.low} mid={mid} high={metrics.coc.high} />
+          </div>
         </div>
-        <div className="min-w-0 flex-1">
-          <CocRange low={metrics.coc.low} mid={mid} high={metrics.coc.high} />
-        </div>
-      </div>
 
-      <dl className="grid grid-cols-2 gap-3">
-        <div className="min-w-0">
-          <dt className="text-[12px] text-foreground-muted">Cash needed</dt>
-          <dd className="text-[15px] font-medium tabular-nums text-foreground">
-            {formatBudget(metrics.cash_needed)}
-          </dd>
-        </div>
-        <div className="min-w-0 border-l border-border pl-3">
-          <dt className="text-[12px] text-foreground-muted">Cash flow / yr (mid)</dt>
-          <dd
-            className={`text-[15px] font-medium tabular-nums ${
-              metrics.cash_flow.mid < 0 ? "text-danger" : "text-foreground"
-            }`}
-          >
-            {formatBudget(metrics.cash_flow.mid)}
-          </dd>
-        </div>
-      </dl>
+        <dl className="grid grid-cols-2 gap-3">
+          <div className="min-w-0">
+            <dt className="text-[12px] text-foreground-muted">Cash needed</dt>
+            <dd className="text-[15px] font-medium tabular-nums text-foreground">
+              {formatBudget(metrics.cash_needed)}
+            </dd>
+          </div>
+          <div className="min-w-0 border-l border-border pl-3">
+            <dt className="text-[12px] text-foreground-muted">Cash flow / yr (mid)</dt>
+            <dd
+              className={`text-[15px] font-medium tabular-nums ${
+                metrics.cash_flow.mid < 0 ? "text-danger" : "text-foreground"
+              }`}
+            >
+              {formatBudget(metrics.cash_flow.mid)}
+            </dd>
+          </div>
+        </dl>
+      </div>
     </Link>
   );
 }

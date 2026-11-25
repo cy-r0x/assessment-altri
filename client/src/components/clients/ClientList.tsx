@@ -20,9 +20,6 @@ export function ClientList({ clients, pagination }: ClientListProps) {
           <h1 className="text-[24px] font-medium tracking-tight text-foreground md:text-[26px]">
             Clients
           </h1>
-          <p className="mt-0.5 text-[14px] text-foreground-muted">
-            Pick an investor to review deals
-          </p>
         </div>
         <p className="text-[14px] tabular-nums text-foreground-muted">
           {total} total · page {page} of {total_pages}
@@ -56,7 +53,9 @@ export function ClientList({ clients, pagination }: ClientListProps) {
                     <span className="text-border-strong">·</span>
                     <span className="inline-flex items-center gap-1">
                       <BedDouble size={13} />
-                      <span className="tabular-nums">{client.min_bedrooms ?? "—"}+</span>
+                      <span className="tabular-nums">
+                        {client.min_bedrooms ?? "—"}+
+                      </span>
                     </span>
                   </p>
                   <p className="flex items-center gap-1.5 text-[13px] text-foreground-subtle">
@@ -74,11 +73,21 @@ export function ClientList({ clients, pagination }: ClientListProps) {
         className="mt-6 flex items-center justify-center gap-2 border-t border-border pt-4"
         aria-label="Pagination"
       >
-        <PaginationLink page={page - 1} disabled={page <= 1} label="Previous" icon="prev" />
+        <PaginationLink
+          page={page - 1}
+          disabled={page <= 1}
+          label="Previous"
+          icon="prev"
+        />
         <span className="px-2 text-[13px] tabular-nums text-foreground-muted">
           {page} / {total_pages}
         </span>
-        <PaginationLink page={page + 1} disabled={page >= total_pages} label="Next" icon="next" />
+        <PaginationLink
+          page={page + 1}
+          disabled={page >= total_pages}
+          label="Next"
+          icon="next"
+        />
       </nav>
     </div>
   );

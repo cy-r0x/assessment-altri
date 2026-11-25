@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -15,7 +16,7 @@ import {
 import { notFound } from "next/navigation";
 
 import { AppHeader } from "@/components/AppHeader";
-import { fetchDeal, formatBudget, formatPct } from "@/lib/api";
+import { dealImageUrl, fetchDeal, formatBudget, formatPct } from "@/lib/api";
 
 type DealPageProps = {
   params: Promise<{ id: string }>;
@@ -51,6 +52,16 @@ export default async function DealPage({ params }: DealPageProps) {
 
         <div className="mt-4 grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-stretch">
           <section className="h-full rounded-[14px] border border-border bg-surface p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+            <div className="relative mb-5 aspect-[2/1] w-full overflow-hidden rounded-[12px] bg-surface-muted">
+              <Image
+                src={dealImageUrl(deal.id, 1600, 800)}
+                alt={`Photo of ${deal.address ?? deal.id}`}
+                fill
+                sizes="(min-width: 1024px) 60vw, 100vw"
+                className="object-cover"
+                preload
+              />
+            </div>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-[13px] tabular-nums text-foreground-muted">{deal.id}</p>

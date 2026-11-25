@@ -1,7 +1,16 @@
+import type { ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { Bath, BedDouble, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
+import {
+  Bath,
+  BedDouble,
+  ChevronLeft,
+  ChevronRight,
+  LandPlot,
+  MapPin,
+} from "lucide-react";
 
-import { formatBudget } from "@/lib/api";
+import { dealImageUrl, formatBudget } from "@/lib/api";
 import type { DealSummary, Pagination } from "@/lib/types";
 
 type DealListProps = {
@@ -19,63 +28,52 @@ export function DealList({ deals, pagination }: DealListProps) {
           <h1 className="text-[24px] font-medium tracking-tight text-foreground md:text-[26px]">
             Deals
           </h1>
-          <p className="mt-0.5 text-[14px] text-foreground-muted">
-            Available inventory across markets
-          </p>
         </div>
         <p className="text-[14px] tabular-nums text-foreground-muted">
           {total} total · page {page} of {total_pages}
         </p>
       </div>
 
-      <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {deals.map((deal) => {
-          const location = [deal.city, deal.state].filter(Boolean).join(", ") || "—";
-          const midRevenue = deal.revenue?.mid;
+      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {deals.map((deal, index) => {
+          const location =
+            [deal.city, deal.state].filter(Boolean).join(", ") || "—";
 
           return (
             <li key={deal.id}>
               <Link
                 href={`/deals/${deal.id}`}
-                className="flex h-full flex-col gap-2 rounded-[14px] border border-border bg-surface px-3.5 py-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-[box-shadow,border-color,transform] duration-150 hover:-translate-y-px hover:border-border-strong hover:shadow-[var(--shadow-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex h-full flex-col overflow-hidden rounded-[14px] border border-border bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-[box-shadow,border-color,transform] duration-150 hover:-translate-y-px hover:border-border-strong hover:shadow-[var(--shadow-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <div className="flex items-baseline justify-between gap-3">
-                  <p className="truncate text-[15px] font-medium text-foreground">
+                <div className="relative aspect-[4/3] w-full bg-surface-muted">
+                  <Image
+                    src={dealImageUrl(deal.id)}
+                    alt={`Photo of ${deal.address ?? deal.id}`}
+                    fill
+                    sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                    className="object-cover"
+                    preload={index < 4}
+                  />
+                  <span className="absolute bottom-3 left-3 rounded-[8px] bg-foreground/90 px-2.5 py-1 text-[15px] font-medium tabular-nums text-primary-foreground">
+                    {formatBudget(deal.purchase_price)}
+                  </span>
+                </div>
+                <div className="flex flex-1 flex-col gap-1 px-4 pb-4 pt-3">
+                  <p className="flex items-center gap-1.5 text-[13px] text-foreground-muted">
+                    <MapPin size={14} className="shrink-0" />
+                    <span className="truncate">{location}</span>
+                  </p>
+
+                  <p className="truncate text-[16px] font-medium text-foreground">
                     {deal.address ?? deal.id}
                   </p>
-                  <p className="shrink-0 text-[15px] font-medium tabular-nums text-foreground">
-                    {formatBudget(deal.purchase_price)}
-                  </p>
+
+                  <dl className="mt-3 grid grid-cols-3 divide-x divide-border border-t border-border pt-3">
+                    <Spec icon={<BedDouble size={14} />} label="Beds" value={deal.bedrooms} />
+                    <Spec icon={<Bath size={14} />} label="Baths" value={deal.baths} />
+                    <Spec icon={<LandPlot size={14} />} label="Acres" value={deal.lot_acres} />
+                  </dl>
                 </div>
-
-                <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-foreground-muted">
-                  <span className="tabular-nums">{deal.id}</span>
-                  <span className="text-border-strong">·</span>
-                  <span className="inline-flex items-center gap-1">
-                    <BedDouble size={13} />
-                    <span className="tabular-nums">{deal.bedrooms ?? "—"}</span>
-                  </span>
-                  <span className="inline-flex items-center gap-1">
-                    <Bath size={13} />
-                    <span className="tabular-nums">{deal.baths ?? "—"}</span>
-                  </span>
-                  {deal.turnkey != null ? (
-                    <>
-                      <span className="text-border-strong">·</span>
-                      <span>{deal.turnkey ? "Turnkey" : "Needs work"}</span>
-                    </>
-                  ) : null}
-                </p>
-
-                <p className="flex items-center gap-1.5 text-[13px] text-foreground-subtle">
-                  <MapPin size={13} className="shrink-0" />
-                  <span className="truncate">{location}</span>
-                  {midRevenue != null ? (
-                    <span className="ml-auto shrink-0 tabular-nums">
-                      Mid rev {formatBudget(midRevenue)}
-                    </span>
-                  ) : null}
-                </p>
               </Link>
             </li>
           );
@@ -86,12 +84,42 @@ export function DealList({ deals, pagination }: DealListProps) {
         className="mt-6 flex items-center justify-center gap-2 border-t border-border pt-4"
         aria-label="Pagination"
       >
-        <PaginationLink page={page - 1} disabled={page <= 1} label="Previous" icon="prev" />
+        <PaginationLink
+          page={page - 1}
+          disabled={page <= 1}
+          label="Previous"
+          icon="prev"
+        />
         <span className="px-2 text-[13px] tabular-nums text-foreground-muted">
           {page} / {total_pages}
         </span>
-        <PaginationLink page={page + 1} disabled={page >= total_pages} label="Next" icon="next" />
+        <PaginationLink
+          page={page + 1}
+          disabled={page >= total_pages}
+          label="Next"
+          icon="next"
+        />
       </nav>
+    </div>
+  );
+}
+
+function Spec({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: number | null;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-0.5 px-2">
+      <dd className="text-[16px] font-medium tabular-nums text-foreground">{value ?? "—"}</dd>
+      <dt className="inline-flex items-center gap-1 text-[12px] text-foreground-muted">
+        {icon}
+        {label}
+      </dt>
     </div>
   );
 }
