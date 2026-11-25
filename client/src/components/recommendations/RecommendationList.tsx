@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+import { ExcludedDealsPanel } from "@/components/recommendations/ExcludedDealsPanel";
 import { RecommendationCard } from "@/components/recommendations/RecommendationCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchRecommendations } from "@/lib/api";
@@ -135,27 +135,7 @@ export function RecommendationList({
         </>
       )}
 
-      {excluded.length > 0 ? (
-        <div className="mt-6">
-          <h3 className="text-[15px] font-medium text-foreground">Filtered out</h3>
-          <ul className="mt-2 divide-y divide-border rounded-[14px] border border-border bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-            {excluded.map((item) => (
-              <li
-                key={item.deal_id}
-                className="flex items-baseline gap-3 px-3.5 py-2.5 text-[13px]"
-              >
-                <Link
-                  href={`/deals/${item.deal_id}`}
-                  className="shrink-0 font-medium tabular-nums text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  {item.deal_id}
-                </Link>
-                <span className="min-w-0 truncate text-foreground-muted">{item.rule}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
+      <ExcludedDealsPanel excluded={excluded} />
     </div>
   );
 }

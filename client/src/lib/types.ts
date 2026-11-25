@@ -98,7 +98,13 @@ export type Recommendation = {
   explanation: string;
 };
 
-export type ExcludedDeal = { deal_id: string; rule: string };
+export type ExcludedDeal = {
+  deal_id: string;
+  rule: string;
+  deal_address?: string | null;
+  deal_city?: string | null;
+  deal_state?: string | null;
+};
 
 export type RecommendationsResponse = {
   client_id: string;

@@ -13,6 +13,18 @@ def _norm(value: str | None) -> str:
     return (value or "").strip().lower()
 
 
+def _excluded_row(deal: Deal, rule: str, **extra) -> dict:
+    row = {
+        "deal_id": deal.id,
+        "rule": rule,
+        "deal_address": deal.address,
+        "deal_city": deal.city,
+        "deal_state": deal.state,
+    }
+    row.update(extra)
+    return row
+
+
 def _label_matches(label: str, candidate: str) -> bool:
     """Loose match for messy preference labels (Smokies ↔ Smoky Mountains)."""
     a, b = _norm(label), _norm(candidate)
@@ -230,41 +242,47 @@ class ClientService:
                         if flex
                         else "Cash needed exceeds budget"
                     )
-                    excluded.append({"deal_id": deal.id, "rule": rule, "metrics": {
-                        "cash_needed": metrics["cash_needed"],
-                        "budget_cap": budget_cap,
-                    }})
+                    excluded.append(
+                        _excluded_row(
+                            deal,
+                            rule,
+                            metrics={
+                                "cash_needed": metrics["cash_needed"],
+                                "budget_cap": budget_cap,
+                            },
+                        )
+                    )
                     continue
 
                 avoid_reason = _is_avoided(deal, market, client.avoid_markets)
                 if avoid_reason:
-                    excluded.append({"deal_id": deal.id, "rule": avoid_reason})
+                    excluded.append(_excluded_row(deal, avoid_reason))
                     continue
 
                 if client.min_bedrooms is not None and (deal.bedrooms or 0) < client.min_bedrooms:
                     beds = deal.bedrooms if deal.bedrooms is not None else 0
                     excluded.append(
-                        {
-                            "deal_id": deal.id,
-                            "rule": (
+                        _excluded_row(
+                            deal,
+                            (
                                 f"Fewer bedrooms than minimum "
                                 f"({beds} < {client.min_bedrooms})"
                             ),
-                        }
+                        )
                     )
                     continue
 
                 pencil_reason = _pencils(client, metrics)
                 if pencil_reason:
                     excluded.append(
-                        {
-                            "deal_id": deal.id,
-                            "rule": pencil_reason,
-                            "metrics": {
+                        _excluded_row(
+                            deal,
+                            pencil_reason,
+                            metrics={
                                 "coc_low": metrics["coc"]["low"],
                                 "cash_flow_low": metrics["cash_flow"]["low"],
                             },
-                        }
+                        )
                     )
                     continue
 
