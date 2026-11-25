@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft,
   BedDouble,
   CalendarDays,
   CircleDollarSign,
@@ -19,9 +18,16 @@ import {
 import { notFound } from "next/navigation";
 
 import { AppHeader } from "@/components/AppHeader";
+import { BackLink, PageShell } from "@/components/PageShell";
 import { ClientAvatar } from "@/components/clients/ClientAvatar";
 import { RecommendationList } from "@/components/recommendations/RecommendationList";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { fetchClient, fetchRecommendations, formatBudget, formatFocus } from "@/lib/api";
@@ -68,25 +74,19 @@ export default async function ClientPage({ params }: ClientPageProps) {
     <div className="min-h-dvh bg-background">
       <AppHeader />
 
-      <main className="relative mx-auto w-full max-w-[1400px] px-6 pb-12 pt-5 md:px-10">
-        <Link
-          href="/"
-          className="relative inline-flex items-center gap-1.5 text-[13px] font-medium text-foreground-muted transition-colors hover:text-foreground"
-        >
-          <ArrowLeft size={14} />
-          Clients
-        </Link>
+      <PageShell width="detail" className="relative">
+        <BackLink href="/" label="Clients" />
 
         <div className="relative mt-4 grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-stretch">
-          <section className="rounded-[14px] border border-border bg-surface p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+          <section className="rounded-[14px] border border-border/80 bg-surface p-6 shadow-[var(--shadow-card)]">
             <div className="flex items-center gap-5">
               <ClientAvatar id={profile.id} size="xl" />
               <div className="min-w-0 flex-1">
-                <h1 className="truncate text-[22px] font-medium tracking-tight text-foreground">
+                <h1 className="truncate text-[22px] font-medium tracking-tight text-foreground md:text-[26px]">
                   {profile.name ?? "Client"}
                 </h1>
                 {profile.notes ? (
-                  <p className="mt-1.5 text-pretty text-[14px] leading-relaxed text-foreground-muted">
+                  <p className="mt-1.5 max-w-prose text-pretty text-[14px] leading-relaxed text-foreground-muted">
                     {profile.notes}
                   </p>
                 ) : null}
@@ -134,14 +134,22 @@ export default async function ClientPage({ params }: ClientPageProps) {
           </section>
 
           {/* h-0 min-h-full: match profile column height without letting the list grow the row */}
-          <Card className="max-h-[min(36rem,calc(100dvh-10rem))] gap-0 overflow-hidden py-0 lg:h-0 lg:max-h-none lg:min-h-full">
+          <Card className="max-h-[min(36rem,calc(100dvh-10rem))] gap-0 overflow-hidden border-border/80 py-0 shadow-[var(--shadow-card)] lg:h-0 lg:max-h-none lg:min-h-full">
             <CardHeader className="shrink-0 px-5 py-4">
               <CardTitle>Feedback</CardTitle>
+              <CardDescription className="text-xs">
+                Latest reaction per deal from this client
+              </CardDescription>
             </CardHeader>
             <Separator />
             <CardContent className="flex min-h-0 flex-1 flex-col px-0 pb-0">
               {activeFeedback.length === 0 ? (
-                <p className="px-5 py-6 text-sm text-muted-foreground">No feedback yet.</p>
+                <div className="px-5 py-10 text-center">
+                  <p className="text-sm text-muted-foreground">No feedback yet.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Like or dislike a recommendation below to capture preference.
+                  </p>
+                </div>
               ) : (
                 <ScrollArea className="min-h-0 flex-1">
                   <ul className="divide-y divide-border">
@@ -156,7 +164,7 @@ export default async function ClientPage({ params }: ClientPageProps) {
                         <li key={item.id}>
                           <Link
                             href={`/deals/${item.deal_id}`}
-                            className="flex gap-3 px-5 py-3.5 transition-colors hover:bg-muted/60 focus-visible:bg-muted/60 focus-visible:outline-none"
+                            className="flex cursor-pointer gap-3 px-5 py-3.5 transition-colors duration-150 hover:bg-muted/60 focus-visible:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                           >
                             <span
                               className={cn(
@@ -215,15 +223,15 @@ export default async function ClientPage({ params }: ClientPageProps) {
               feedback={activeFeedback}
             />
           ) : (
-            <div className="rounded-[14px] border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+            <div className="rounded-[14px] border border-dashed border-border bg-surface/70 p-5">
               <h2 className="text-[16px] font-medium text-foreground">Recommendations</h2>
-              <p className="mt-2 text-[13px] text-foreground-muted">
-                Couldn&apos;t load recommendations
+              <p className="mt-2 text-[13px] text-foreground-muted" role="alert">
+                Couldn&apos;t load recommendations. Try refreshing the page.
               </p>
             </div>
           )}
         </section>
-      </main>
+      </PageShell>
     </div>
   );
 }
@@ -243,7 +251,9 @@ function MetaTile({
       className="min-h-[4.5rem] flex-row items-center justify-between gap-3 border-0 bg-[#222222] px-4 py-4 text-white ring-0"
     >
       <div className="flex min-w-0 items-center gap-2.5 text-white/70">
-        <span className="shrink-0 text-white">{icon}</span>
+        <span className="shrink-0 text-white" aria-hidden>
+          {icon}
+        </span>
         <span className="truncate text-[12px] tracking-wide">{label}</span>
       </div>
       <p className="shrink-0 text-[16px] font-medium tabular-nums text-white">
@@ -270,7 +280,10 @@ function Fact({
         wide ? "sm:col-span-2" : ""
       }`}
     >
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface text-foreground-muted shadow-[inset_0_0_0_1px_rgba(0,0,0,0.04)]">
+      <span
+        aria-hidden
+        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface text-foreground-muted shadow-[inset_0_0_0_1px_rgba(0,0,0,0.04)]"
+      >
         {icon}
       </span>
       <div className="min-w-0">

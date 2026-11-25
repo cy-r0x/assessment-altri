@@ -2,10 +2,11 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, FilterX } from "lucide-react";
+import { FilterX } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Separator } from "@/components/ui/separator";
 import {
   Table,
@@ -57,10 +58,13 @@ export function ExcludedDealsPanel({ excluded }: ExcludedDealsPanelProps) {
   if (excluded.length === 0) return null;
 
   return (
-    <Card className="mt-10 gap-0 overflow-hidden py-0 shadow-[var(--shadow-card)]">
+    <Card className="mt-10 gap-0 overflow-hidden border-border/80 py-0 shadow-[var(--shadow-card)]">
       <CardHeader className="flex-row items-center justify-between gap-3 px-5 py-4">
         <div className="flex items-center gap-2.5">
-          <span className="flex size-8 items-center justify-center rounded-full bg-muted text-muted-foreground">
+          <span
+            aria-hidden
+            className="flex size-8 items-center justify-center rounded-full bg-muted text-muted-foreground"
+          >
             <FilterX size={16} strokeWidth={2} />
           </span>
           <div>
@@ -89,11 +93,11 @@ export function ExcludedDealsPanel({ excluded }: ExcludedDealsPanelProps) {
               const place = [item.deal_city, item.deal_state].filter(Boolean).join(", ");
               const title = item.deal_address || item.deal_id;
               return (
-                <TableRow key={item.deal_id}>
+                <TableRow key={item.deal_id} className="transition-colors duration-150">
                   <TableCell className="pl-5 align-middle">
                     <Link
                       href={`/deals/${item.deal_id}`}
-                      className="block min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="block min-w-0 cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     >
                       <p className="truncate text-sm font-medium text-foreground hover:underline">
                         {title}
@@ -117,65 +121,14 @@ export function ExcludedDealsPanel({ excluded }: ExcludedDealsPanelProps) {
           </TableBody>
         </Table>
 
-        {totalPages > 1 ? (
-          <div className="flex items-center justify-center gap-2 border-t border-border px-5 py-3">
-            <PaginationButton
-              disabled={currentPage <= 1}
-              label="Previous"
-              icon="prev"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            />
-            <span className="px-2 text-[13px] tabular-nums text-muted-foreground">
-              {currentPage} / {totalPages}
-            </span>
-            <PaginationButton
-              disabled={currentPage >= totalPages}
-              label="Next"
-              icon="next"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            />
-          </div>
-        ) : null}
+        <PaginationControls
+          page={currentPage}
+          totalPages={totalPages}
+          compact
+          label="Filtered deals pagination"
+          onPageChange={setPage}
+        />
       </CardContent>
     </Card>
-  );
-}
-
-function PaginationButton({
-  disabled,
-  label,
-  icon,
-  onClick,
-}: {
-  disabled: boolean;
-  label: string;
-  icon: "prev" | "next";
-  onClick: () => void;
-}) {
-  const Icon = icon === "prev" ? ChevronLeft : ChevronRight;
-  const content = (
-    <>
-      {icon === "prev" ? <Icon size={16} /> : null}
-      <span>{label}</span>
-      {icon === "next" ? <Icon size={16} /> : null}
-    </>
-  );
-
-  if (disabled) {
-    return (
-      <span className="inline-flex items-center gap-1 rounded-[28px] border border-border px-3 py-1.5 text-[13px] text-muted-foreground">
-        {content}
-      </span>
-    );
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="inline-flex items-center gap-1 rounded-[28px] border border-foreground px-3 py-1.5 text-[13px] font-medium text-foreground transition-colors hover:bg-foreground hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-    >
-      {content}
-    </button>
   );
 }

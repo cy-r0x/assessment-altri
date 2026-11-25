@@ -71,16 +71,17 @@ export function RecommendationCard({
   return (
     <Link
       href={`/deals/${deal.id}`}
-      className="group flex h-full flex-col overflow-hidden rounded-[14px] bg-surface shadow-[var(--shadow-card)] transition-[box-shadow,transform] duration-150 hover:-translate-y-px hover:shadow-[0_10px_24px_rgba(0,0,0,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="card-interactive group flex h-full cursor-pointer flex-col overflow-hidden rounded-[14px] bg-surface shadow-[var(--shadow-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
     >
-      <div className="relative aspect-[4/3] w-full bg-surface-muted">
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-surface-muted">
         <Image
           src={dealImageUrl(deal.id)}
           alt={`Photo of ${deal.address ?? deal.id}`}
           fill
           sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
-          className="object-cover"
+          className="object-cover transition-transform duration-300 motion-safe:group-hover:scale-[1.02]"
           preload={rank <= 3}
+          loading={rank <= 3 ? "eager" : "lazy"}
         />
 
         <span
@@ -97,7 +98,7 @@ export function RecommendationCard({
           className={`absolute right-3 top-3 flex items-center gap-1.5 transition-opacity duration-150 ${
             reaction
               ? "opacity-100"
-              : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
+              : "opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
           }`}
         >
           <FeedbackButton
@@ -136,7 +137,7 @@ export function RecommendationCard({
           {deal.address ?? "Deal"}
         </p>
         <p className="flex items-center gap-1.5 text-[13px] text-foreground-muted">
-          <MapPin size={14} className="shrink-0" />
+          <MapPin size={14} className="shrink-0" aria-hidden />
           <span className="truncate">
             {location}
             {setting ? ` · ${setting}` : ""}
@@ -175,10 +176,10 @@ export function RecommendationCard({
         </dl>
 
         <dl className="mt-3 grid grid-cols-3 divide-x divide-border border-t border-border pt-3">
-          <Spec icon={<BedDouble size={14} />} label="Beds" value={deal.bedrooms} />
-          <Spec icon={<Bath size={14} />} label="Baths" value={deal.baths} />
+          <Spec icon={<BedDouble size={14} aria-hidden />} label="Beds" value={deal.bedrooms} />
+          <Spec icon={<Bath size={14} aria-hidden />} label="Baths" value={deal.baths} />
           <Spec
-            icon={<Home size={14} />}
+            icon={<Home size={14} aria-hidden />}
             label="Status"
             value={
               deal.turnkey == null ? "—" : deal.turnkey ? "Turnkey" : "Needs work"
@@ -241,7 +242,7 @@ function FeedbackButton({
         event.stopPropagation();
         onClick();
       }}
-      className={`inline-flex size-8 items-center justify-center rounded-full shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60 ${
+      className={`inline-flex size-9 min-h-9 min-w-9 cursor-pointer items-center justify-center rounded-full shadow-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 ${
         active ? activeClass : "bg-surface text-foreground hover:bg-surface-muted"
       }`}
     >

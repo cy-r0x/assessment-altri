@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { ExcludedDealsPanel } from "@/components/recommendations/ExcludedDealsPanel";
 import { RecommendationCard } from "@/components/recommendations/RecommendationCard";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchRecommendations } from "@/lib/api";
 import type {
@@ -72,20 +72,25 @@ export function RecommendationList({
 
   return (
     <div>
-      <div className="mb-4 text-center">
+      <div className="mb-5 text-center">
         <h2 className="text-[28px] font-medium tracking-tight text-foreground md:text-[32px]">
           Recommendations
         </h2>
+        <p className="mt-1.5 text-[13px] text-foreground-muted">
+          Ranked matches that clear this client&apos;s hard filters
+        </p>
       </div>
 
       {recommendations.length === 0 && !pending ? (
-        <p className="text-[14px] text-foreground-muted">
-          No deals pass this client&apos;s hard rules.
-        </p>
+        <div className="rounded-[14px] border border-dashed border-border bg-surface/70 px-6 py-12 text-center">
+          <p className="text-[14px] text-foreground-muted">
+            No deals pass this client&apos;s hard rules.
+          </p>
+        </div>
       ) : (
         <>
           <ul
-            className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3"
+            className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
             aria-busy={pending}
           >
             {pending
@@ -107,31 +112,18 @@ export function RecommendationList({
           </ul>
 
           {error ? (
-            <p className="mt-3 text-center text-[13px] text-danger">{error}</p>
+            <p className="mt-3 text-center text-[13px] text-danger" role="alert">
+              {error}
+            </p>
           ) : null}
 
-          {total_pages > 1 ? (
-            <nav
-              className="mt-6 flex items-center justify-center gap-2 border-t border-border pt-4"
-              aria-label="Recommendations pagination"
-            >
-              <PaginationButton
-                disabled={pending || page <= 1}
-                label="Previous"
-                icon="prev"
-                onClick={() => goToPage(page - 1)}
-              />
-              <span className="px-2 text-[13px] tabular-nums text-foreground-muted">
-                {page} / {total_pages}
-              </span>
-              <PaginationButton
-                disabled={pending || page >= total_pages}
-                label="Next"
-                icon="next"
-                onClick={() => goToPage(page + 1)}
-              />
-            </nav>
-          ) : null}
+          <PaginationControls
+            page={page}
+            totalPages={total_pages}
+            disabled={pending}
+            label="Recommendations pagination"
+            onPageChange={goToPage}
+          />
         </>
       )}
 
@@ -180,44 +172,5 @@ function RecommendationCardSkeleton() {
         </div>
       </div>
     </div>
-  );
-}
-
-function PaginationButton({
-  disabled,
-  label,
-  icon,
-  onClick,
-}: {
-  disabled: boolean;
-  label: string;
-  icon: "prev" | "next";
-  onClick: () => void;
-}) {
-  const Icon = icon === "prev" ? ChevronLeft : ChevronRight;
-  const content = (
-    <>
-      {icon === "prev" ? <Icon size={16} /> : null}
-      <span>{label}</span>
-      {icon === "next" ? <Icon size={16} /> : null}
-    </>
-  );
-
-  if (disabled) {
-    return (
-      <span className="inline-flex items-center gap-1 rounded-[28px] border border-border px-3 py-1.5 text-[13px] text-foreground-subtle">
-        {content}
-      </span>
-    );
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="inline-flex items-center gap-1 rounded-[28px] border border-foreground px-3 py-1.5 text-[13px] font-medium text-foreground transition-colors hover:bg-foreground hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-    >
-      {content}
-    </button>
   );
 }

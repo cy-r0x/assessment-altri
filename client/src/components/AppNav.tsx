@@ -19,7 +19,8 @@ export function AppNav() {
           <Link
             key={link.href}
             href={link.href}
-            className={`rounded-[8px] px-3 py-1.5 text-[14px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+            aria-current={active ? "page" : undefined}
+            className={`cursor-pointer rounded-[8px] px-3 py-1.5 text-[14px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
               active
                 ? "bg-surface-muted text-foreground"
                 : "text-foreground-muted hover:bg-surface-muted/70 hover:text-foreground"

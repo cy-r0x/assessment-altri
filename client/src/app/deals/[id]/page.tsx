@@ -1,8 +1,6 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import {
-  ArrowLeft,
   Bath,
   BedDouble,
   CalendarDays,
@@ -16,6 +14,7 @@ import {
 import { notFound } from "next/navigation";
 
 import { AppHeader } from "@/components/AppHeader";
+import { BackLink, PageShell } from "@/components/PageShell";
 import { dealImageUrl, fetchDeal, formatBudget, formatPct } from "@/lib/api";
 
 type DealPageProps = {
@@ -41,17 +40,11 @@ export default async function DealPage({ params }: DealPageProps) {
     <div className="min-h-dvh bg-background">
       <AppHeader />
 
-      <main className="relative mx-auto w-full max-w-[1400px] px-6 pb-12 pt-5 md:px-10">
-        <Link
-          href="/deals"
-          className="inline-flex items-center gap-1.5 text-[13px] font-medium text-foreground-muted transition-colors hover:text-foreground"
-        >
-          <ArrowLeft size={14} />
-          Deals
-        </Link>
+      <PageShell width="detail">
+        <BackLink href="/deals" label="Deals" />
 
         <div className="mt-4 grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-stretch">
-          <section className="h-full rounded-[14px] border border-border bg-surface p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+          <section className="h-full rounded-[14px] border border-border/80 bg-surface p-6 shadow-[var(--shadow-card)]">
             <div className="relative mb-5 aspect-[2/1] w-full overflow-hidden rounded-[12px] bg-surface-muted">
               <Image
                 src={dealImageUrl(deal.id, 1600, 800)}
@@ -65,15 +58,15 @@ export default async function DealPage({ params }: DealPageProps) {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-[13px] tabular-nums text-foreground-muted">{deal.id}</p>
-                <h1 className="mt-1 text-[22px] font-medium tracking-tight text-foreground">
+                <h1 className="mt-1 text-[22px] font-medium tracking-tight text-foreground md:text-[26px]">
                   {deal.address ?? "Deal"}
                 </h1>
                 <p className="mt-1 flex items-center gap-1.5 text-[14px] text-foreground-muted">
-                  <MapPin size={14} className="shrink-0" />
+                  <MapPin size={14} className="shrink-0" aria-hidden />
                   {location}
                 </p>
               </div>
-              <p className="text-[22px] font-medium tabular-nums text-foreground">
+              <p className="rounded-[10px] bg-foreground px-3 py-1.5 text-[20px] font-medium tabular-nums text-primary-foreground md:text-[22px]">
                 {formatBudget(deal.purchase_price)}
               </p>
             </div>
@@ -116,7 +109,7 @@ export default async function DealPage({ params }: DealPageProps) {
             {deal.highlights?.length ? (
               <div className="mt-6">
                 <h2 className="flex items-center gap-2 text-[16px] font-medium text-foreground">
-                  <Sparkles size={16} />
+                  <Sparkles size={16} aria-hidden />
                   Highlights
                 </h2>
                 <ul className="mt-3 space-y-2">
@@ -134,7 +127,7 @@ export default async function DealPage({ params }: DealPageProps) {
           </section>
 
           <aside className="flex h-full min-h-0 flex-col gap-5">
-            <section className="rounded-[14px] border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+            <section className="rounded-[14px] border border-border/80 bg-surface p-5 shadow-[var(--shadow-card)]">
               <h2 className="text-[16px] font-medium text-foreground">Revenue</h2>
               <dl className="mt-3 grid grid-cols-3 gap-2">
                 <RevenueCell label="Low" value={deal.revenue?.low} />
@@ -143,7 +136,7 @@ export default async function DealPage({ params }: DealPageProps) {
               </dl>
             </section>
 
-            <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px] border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+            <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px] border border-border/80 bg-surface p-5 shadow-[var(--shadow-card)]">
               <div className="flex shrink-0 items-baseline justify-between gap-2">
                 <h2 className="text-[16px] font-medium text-foreground">Setup</h2>
                 {setupTotal != null ? (
@@ -171,7 +164,7 @@ export default async function DealPage({ params }: DealPageProps) {
               )}
             </section>
 
-            <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px] border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+            <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px] border border-border/80 bg-surface p-5 shadow-[var(--shadow-card)]">
               <h2 className="shrink-0 text-[16px] font-medium text-foreground">Comps</h2>
               {deal.comps?.length ? (
                 <ul className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto">
@@ -200,7 +193,7 @@ export default async function DealPage({ params }: DealPageProps) {
             </section>
           </aside>
         </div>
-      </main>
+      </PageShell>
     </div>
   );
 }
@@ -222,7 +215,10 @@ function Fact({
         wide ? "sm:col-span-2" : ""
       }`}
     >
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface text-foreground-muted shadow-[inset_0_0_0_1px_rgba(0,0,0,0.04)]">
+      <span
+        aria-hidden
+        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface text-foreground-muted shadow-[inset_0_0_0_1px_rgba(0,0,0,0.04)]"
+      >
         {icon}
       </span>
       <div className="min-w-0">
