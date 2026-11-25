@@ -1,4 +1,8 @@
-import { UserRound } from "lucide-react";
+import Image from "next/image";
+
+export function clientAvatarUrl(id: string): string {
+  return `https://api.dicebear.com/9.x/notionists/svg?seed=${encodeURIComponent(id)}`;
+}
 
 export const AVATAR_TONES = [
   "bg-[#ffe8ec] text-[#c13515]",
@@ -22,19 +26,20 @@ type ClientAvatarProps = {
 };
 
 const SIZES = {
-  sm: { box: "size-10", icon: 18 },
-  md: { box: "size-14", icon: 26 },
-  lg: { box: "size-20", icon: 36 },
+  sm: { box: "size-10", px: 40 },
+  md: { box: "size-14", px: 56 },
+  lg: { box: "size-20", px: 80 },
 } as const;
 
 export function ClientAvatar({ id, size = "md", className = "" }: ClientAvatarProps) {
-  const { box, icon } = SIZES[size];
+  const { box, px } = SIZES[size];
   return (
     <div
-      className={`flex shrink-0 items-center justify-center rounded-full ${box} ${toneFor(id)} ${className}`}
+      className={`relative shrink-0 overflow-hidden rounded-full ${box} ${toneFor(id)} ${className}`}
       aria-hidden
     >
-      <UserRound size={icon} strokeWidth={1.75} />
+      {/* DiceBear serves SVG; skip the optimizer (it rejects SVG by default). */}
+      <Image src={clientAvatarUrl(id)} alt="" width={px} height={px} unoptimized className="size-full" />
     </div>
   );
 }

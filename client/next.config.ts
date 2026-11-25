@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "picsum.photos", pathname: "/seed/**" },
       { protocol: "https", hostname: "fastly.picsum.photos" },
+      { protocol: "https", hostname: "api.dicebear.com", pathname: "/9.x/**" },
     ],
   },
   turbopack: {
