@@ -5,12 +5,15 @@ import {
   BedDouble,
   CalendarDays,
   CircleDollarSign,
+  Gauge,
   Home,
   MapPin,
   Percent,
   Sparkles,
+  Target,
   ThumbsDown,
   ThumbsUp,
+  Wallet,
   Wrench,
 } from "lucide-react";
 import { notFound } from "next/navigation";
@@ -18,11 +21,25 @@ import { notFound } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
 import { ClientAvatar } from "@/components/clients/ClientAvatar";
 import { RecommendationList } from "@/components/recommendations/RecommendationList";
+import { Card } from "@/components/ui/card";
 import { fetchClient, fetchRecommendations, formatBudget, formatFocus } from "@/lib/api";
+import type { FeedbackItem } from "@/lib/types";
 
 type ClientPageProps = {
   params: Promise<{ id: string }>;
 };
+
+/** Keep one entry per deal (newest first). */
+function latestFeedback(feedback: FeedbackItem[]): FeedbackItem[] {
+  const seen = new Set<string>();
+  const latest: FeedbackItem[] = [];
+  for (const item of feedback) {
+    if (seen.has(item.deal_id)) continue;
+    seen.add(item.deal_id);
+    latest.push(item);
+  }
+  return latest;
+}
 
 export default async function ClientPage({ params }: ClientPageProps) {
   const { id } = await params;
@@ -39,8 +56,10 @@ export default async function ClientPage({ params }: ClientPageProps) {
   const { profile, feedback } = clientSettled.value.data;
   const recommendations =
     recommendationsSettled.status === "fulfilled" ? recommendationsSettled.value.data : null;
-  const ups = feedback.filter((f) => f.reaction === "up").length;
-  const downs = feedback.filter((f) => f.reaction === "down").length;
+  const activeFeedback = latestFeedback(feedback);
+  const budgetLabel = profile.budget_range || formatBudget(profile.budget);
+  const focusLabel = formatFocus(profile.main_focus);
+  const flexibilityLabel = titleCase(profile.budget_flexibility);
 
   return (
     <div className="min-h-dvh bg-background">
@@ -56,34 +75,38 @@ export default async function ClientPage({ params }: ClientPageProps) {
         </Link>
 
         <div className="relative mt-4 grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-stretch">
-          <section className="h-full rounded-[14px] border border-border bg-surface p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-            <div className="flex items-start gap-4">
-              <ClientAvatar id={profile.id} size="lg" />
+          <section className="rounded-[14px] border border-border bg-surface p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+            <div className="flex items-center gap-5">
+              <ClientAvatar id={profile.id} size="xl" />
               <div className="min-w-0 flex-1">
                 <h1 className="truncate text-[22px] font-medium tracking-tight text-foreground">
                   {profile.name ?? "Client"}
                 </h1>
-                <p className="mt-1 text-[14px] text-foreground-muted">
-                  <span className="font-medium tabular-nums text-foreground">
-                    {formatBudget(profile.budget)}
-                  </span>
-                  <span> · </span>
-                  <span>{formatFocus(profile.main_focus)}</span>
-                  <span> · </span>
-                  <span>{titleCase(profile.budget_flexibility)}</span>
-                </p>
-                <div className="mt-2.5 flex flex-wrap gap-2 text-[12px]">
-                  <Chip icon={<ThumbsUp size={12} />} label={`${ups} up`} tone="success" />
-                  <Chip icon={<ThumbsDown size={12} />} label={`${downs} down`} tone="danger" />
-                </div>
+                {profile.notes ? (
+                  <p className="mt-1.5 text-pretty text-[14px] leading-relaxed text-foreground-muted">
+                    {profile.notes}
+                  </p>
+                ) : null}
               </div>
             </div>
 
-            {profile.notes ? (
-              <p className="mt-4 border-t border-border pt-4 text-pretty text-[14px] leading-relaxed text-foreground-muted">
-                {profile.notes}
-              </p>
-            ) : null}
+            <div className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+              <MetaTile
+                icon={<Wallet size={20} strokeWidth={2} />}
+                label="Budget"
+                value={budgetLabel}
+              />
+              <MetaTile
+                icon={<Target size={20} strokeWidth={2} />}
+                label="Focus"
+                value={focusLabel}
+              />
+              <MetaTile
+                icon={<Gauge size={20} strokeWidth={2} />}
+                label="Flexibility"
+                value={flexibilityLabel}
+              />
+            </div>
 
             <dl className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
               <Fact icon={<MapPin size={18} />} label="Markets" value={joinList(profile.market_preferences) || "—"} />
@@ -107,20 +130,26 @@ export default async function ClientPage({ params }: ClientPageProps) {
             </dl>
           </section>
 
-          <aside className="flex h-full min-h-0 flex-col overflow-hidden rounded-[14px] border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-            <h2 className="shrink-0 text-[16px] font-medium text-foreground">Feedback</h2>
+          {/* h-0 min-h-full: match profile column height without letting the list grow the row */}
+          <aside className="flex max-h-[min(36rem,calc(100dvh-10rem))] flex-col overflow-hidden rounded-[14px] border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] lg:h-0 lg:max-h-none lg:min-h-full">
+            <div className="flex shrink-0 items-baseline justify-between gap-2">
+              <h2 className="text-[16px] font-medium text-foreground">Feedback</h2>
+              <span className="text-[12px] tabular-nums text-foreground-muted">
+                {activeFeedback.length}
+              </span>
+            </div>
 
-            {feedback.length === 0 ? (
+            {activeFeedback.length === 0 ? (
               <p className="mt-4 text-[13px] text-foreground-muted">No feedback yet.</p>
             ) : (
               <ul className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain pr-1">
-                {feedback.map((item) => {
+                {activeFeedback.map((item) => {
                   const up = item.reaction === "up";
                   const down = item.reaction === "down";
                   return (
                     <li
                       key={item.id}
-                      className="rounded-[10px] border border-border bg-surface-muted/80 px-3 py-2.5"
+                      className="grid h-16 shrink-0 grid-rows-[auto_auto] content-center gap-1 rounded-[10px] border border-border bg-surface-muted/80 px-3"
                     >
                       <div className="flex items-center gap-2">
                         {up ? (
@@ -135,11 +164,9 @@ export default async function ClientPage({ params }: ClientPageProps) {
                           {formatDate(item.created_at)}
                         </span>
                       </div>
-                      {item.comment ? (
-                        <p className="mt-1.5 text-pretty text-[13px] leading-snug text-foreground-muted">
-                          {item.comment}
-                        </p>
-                      ) : null}
+                      <p className="truncate text-[13px] leading-none text-foreground-muted">
+                        {item.comment || "No comment"}
+                      </p>
                     </li>
                   );
                 })}
@@ -150,7 +177,7 @@ export default async function ClientPage({ params }: ClientPageProps) {
 
         <section className="relative mt-8">
           {recommendations ? (
-            <RecommendationList data={recommendations} feedback={feedback} />
+            <RecommendationList data={recommendations} feedback={activeFeedback} />
           ) : (
             <div className="rounded-[14px] border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
               <h2 className="text-[16px] font-medium text-foreground">Recommendations</h2>
@@ -165,24 +192,28 @@ export default async function ClientPage({ params }: ClientPageProps) {
   );
 }
 
-function Chip({
+function MetaTile({
   icon,
   label,
-  tone,
+  value,
 }: {
   icon: ReactNode;
   label: string;
-  tone: "success" | "danger";
+  value: string;
 }) {
-  const styles =
-    tone === "success"
-      ? "bg-success-soft text-success"
-      : "bg-danger-soft text-danger";
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium ${styles}`}>
-      {icon}
-      {label}
-    </span>
+    <Card
+      size="sm"
+      className="min-h-[4.5rem] flex-row items-center justify-between gap-3 border-0 bg-[#222222] px-4 py-4 text-white ring-0"
+    >
+      <div className="flex min-w-0 items-center gap-2.5 text-white/70">
+        <span className="shrink-0 text-white">{icon}</span>
+        <span className="truncate text-[12px] tracking-wide">{label}</span>
+      </div>
+      <p className="shrink-0 text-[16px] font-medium tabular-nums text-white">
+        {value}
+      </p>
+    </Card>
   );
 }
 

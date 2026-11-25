@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Roboto } from "next/font/google";
 import "./globals.css";
+import { cn } from "@/lib/utils";
 
-const inter = Inter({
-  variable: "--font-inter",
+const roboto = Roboto({
   subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-roboto",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -14,8 +17,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${inter.variable} h-dvh antialiased`}>
-      <body className="min-h-dvh bg-background font-sans text-foreground">{children}</body>
+    <html lang="en" className={cn("h-dvh antialiased font-sans", roboto.variable)}>
+      <body className={cn("min-h-dvh bg-background font-sans text-foreground", roboto.className)}>
+        {children}
+      </body>
     </html>
   );
 }
