@@ -57,7 +57,7 @@ export default async function ClientPage({ params }: ClientPageProps) {
   const recommendations =
     recommendationsSettled.status === "fulfilled" ? recommendationsSettled.value.data : null;
   const activeFeedback = latestFeedback(feedback);
-  const budgetLabel = profile.budget_range || formatBudget(profile.budget);
+  const budgetLabel = formatBudget(profile.budget);
   const focusLabel = formatFocus(profile.main_focus);
   const flexibilityLabel = titleCase(profile.budget_flexibility);
 
