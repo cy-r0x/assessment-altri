@@ -28,6 +28,9 @@ export type FeedbackItem = {
   reaction: "up" | "down" | string;
   comment: string | null;
   created_at: string | null;
+  deal_address?: string | null;
+  deal_city?: string | null;
+  deal_state?: string | null;
 };
 
 export type ClientDetail = {

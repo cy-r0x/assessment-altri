@@ -26,6 +26,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { fetchClient, fetchRecommendations, formatBudget, formatFocus } from "@/lib/api";
 import type { FeedbackItem } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 type ClientPageProps = {
   params: Promise<{ id: string }>;
@@ -140,44 +141,62 @@ export default async function ClientPage({ params }: ClientPageProps) {
             <Separator />
             <CardContent className="flex min-h-0 flex-1 flex-col px-0 pb-0">
               {activeFeedback.length === 0 ? (
-                <p className="px-5 py-4 text-sm text-muted-foreground">No feedback yet.</p>
+                <p className="px-5 py-6 text-sm text-muted-foreground">No feedback yet.</p>
               ) : (
                 <ScrollArea className="min-h-0 flex-1">
-                  <ul className="space-y-2 px-5 py-4">
+                  <ul className="divide-y divide-border">
                     {activeFeedback.map((item) => {
                       const up = item.reaction === "up";
                       const down = item.reaction === "down";
+                      const place = [item.deal_city, item.deal_state]
+                        .filter(Boolean)
+                        .join(", ");
+                      const title = item.deal_address || item.deal_id;
                       return (
                         <li key={item.id}>
-                          <Card
-                            size="sm"
-                            className="gap-1.5 border-border bg-muted py-3 shadow-none ring-1 ring-border"
+                          <Link
+                            href={`/deals/${item.deal_id}`}
+                            className="flex gap-3 px-5 py-3.5 transition-colors hover:bg-muted/60 focus-visible:bg-muted/60 focus-visible:outline-none"
                           >
-                            <div className="flex items-center gap-2 px-(--card-spacing)">
+                            <span
+                              className={cn(
+                                "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full",
+                                up && "bg-success-soft text-success",
+                                down && "bg-danger-soft text-danger",
+                                !up && !down && "bg-muted text-muted-foreground",
+                              )}
+                            >
                               {up ? (
-                                <ThumbsUp
-                                  size={14}
-                                  className="shrink-0 text-success"
-                                  strokeWidth={2}
-                                />
+                                <ThumbsUp size={14} strokeWidth={2.25} />
                               ) : down ? (
-                                <ThumbsDown
-                                  size={14}
-                                  className="shrink-0 text-danger"
-                                  strokeWidth={2}
-                                />
+                                <ThumbsDown size={14} strokeWidth={2.25} />
                               ) : null}
-                              <p className="min-w-0 flex-1 truncate text-sm font-medium">
-                                {item.deal_id}
-                              </p>
-                              <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-                                {formatDate(item.created_at)}
-                              </span>
+                            </span>
+
+                            <div className="min-w-0 flex-1 space-y-1.5">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <p className="truncate text-sm font-medium leading-snug text-foreground">
+                                    {title}
+                                  </p>
+                                  {place ? (
+                                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                                      {place}
+                                    </p>
+                                  ) : null}
+                                </div>
+                                <span className="shrink-0 pt-0.5 text-[11px] tabular-nums text-muted-foreground">
+                                  {formatDate(item.created_at)}
+                                </span>
+                              </div>
+
+                              {item.comment ? (
+                                <p className="line-clamp-2 text-xs leading-snug text-muted-foreground">
+                                  {item.comment}
+                                </p>
+                              ) : null}
                             </div>
-                            <p className="truncate px-(--card-spacing) text-sm text-muted-foreground">
-                              {item.comment || "No comment"}
-                            </p>
-                          </Card>
+                          </Link>
                         </li>
                       );
                     })}

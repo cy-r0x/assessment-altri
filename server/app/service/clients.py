@@ -178,9 +178,26 @@ class ClientService:
                 .order_by(Feedback.created_at.desc(), Feedback.id.desc())
             ).all()
 
+            deal_ids = {item.deal_id for item in feedback}
+            deals_by_id = {
+                deal.id: deal
+                for deal in session.scalars(
+                    select(Deal).where(Deal.id.in_(deal_ids))
+                ).all()
+            } if deal_ids else {}
+
+            feedback_payload = []
+            for item in feedback:
+                deal = deals_by_id.get(item.deal_id)
+                row = item.to_dict()
+                row["deal_address"] = deal.address if deal else None
+                row["deal_city"] = deal.city if deal else None
+                row["deal_state"] = deal.state if deal else None
+                feedback_payload.append(row)
+
             return {
                 "profile": client.to_profile(),
-                "feedback": [item.to_dict() for item in feedback],
+                "feedback": feedback_payload,
             }
         finally:
             session.close()
