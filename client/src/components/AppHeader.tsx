@@ -1,7 +1,21 @@
 import Link from "next/link";
+import { Suspense } from "react";
 
 import { AppNav } from "@/components/AppNav";
 import { BrandMark } from "@/components/BrandMark";
+
+function AppNavFallback() {
+  return (
+    <nav className="ml-8 flex items-center gap-1" aria-label="Primary" aria-hidden>
+      <span className="rounded-[8px] px-3 py-1.5 text-[14px] font-medium text-foreground-muted">
+        Clients
+      </span>
+      <span className="rounded-[8px] px-3 py-1.5 text-[14px] font-medium text-foreground-muted">
+        Deals
+      </span>
+    </nav>
+  );
+}
 
 export function AppHeader() {
   return (
@@ -16,7 +30,9 @@ export function AppHeader() {
             STR Search
           </span>
         </Link>
-        <AppNav />
+        <Suspense fallback={<AppNavFallback />}>
+          <AppNav />
+        </Suspense>
       </div>
     </header>
   );
