@@ -16,19 +16,14 @@ function clientBudgetLabel(client: ClientSummary): string {
 }
 
 export function ClientList({ clients, pagination }: ClientListProps) {
-  const { page, total_pages, total } = pagination;
+  const { page, total_pages } = pagination;
 
   return (
     <div className="mx-auto w-full max-w-[1760px] px-5 pb-8 pt-4 md:px-8 xl:px-10">
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-2 border-b border-border pb-4">
-        <div>
-          <h1 className="text-[24px] font-medium tracking-tight text-foreground md:text-[26px]">
-            Clients
-          </h1>
-        </div>
-        <p className="text-[14px] tabular-nums text-foreground-muted">
-          {total} total · page {page} of {total_pages}
-        </p>
+      <div className="mb-4 border-b border-border pb-4">
+        <h1 className="text-[24px] font-medium tracking-tight text-foreground md:text-[26px]">
+          Clients
+        </h1>
       </div>
 
       <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">

@@ -120,12 +120,12 @@ export function RecommendationCard({
           </FeedbackButton>
         </div>
 
-        <span className="absolute bottom-3 left-3 rounded-[8px] bg-foreground/90 px-2.5 py-1 text-[15px] font-medium tabular-nums text-primary-foreground">
+        <span className="absolute bottom-3 right-3 rounded-[8px] bg-foreground/90 px-2.5 py-1 text-[15px] font-medium tabular-nums text-primary-foreground">
           {formatBudget(deal.purchase_price)}
         </span>
 
         {error ? (
-          <p className="absolute bottom-3 right-3 max-w-[55%] rounded-[8px] bg-surface/95 px-2 py-1 text-[11px] text-danger shadow-sm">
+          <p className="absolute bottom-3 left-3 max-w-[55%] rounded-[8px] bg-surface/95 px-2 py-1 text-[11px] text-danger shadow-sm">
             {error}
           </p>
         ) : null}

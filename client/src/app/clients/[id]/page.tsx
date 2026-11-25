@@ -21,7 +21,9 @@ import { notFound } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
 import { ClientAvatar } from "@/components/clients/ClientAvatar";
 import { RecommendationList } from "@/components/recommendations/RecommendationList";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { fetchClient, fetchRecommendations, formatBudget, formatFocus } from "@/lib/api";
 import type { FeedbackItem } from "@/lib/types";
 
@@ -131,48 +133,59 @@ export default async function ClientPage({ params }: ClientPageProps) {
           </section>
 
           {/* h-0 min-h-full: match profile column height without letting the list grow the row */}
-          <aside className="flex max-h-[min(36rem,calc(100dvh-10rem))] flex-col overflow-hidden rounded-[14px] border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] lg:h-0 lg:max-h-none lg:min-h-full">
-            <div className="flex shrink-0 items-baseline justify-between gap-2">
-              <h2 className="text-[16px] font-medium text-foreground">Feedback</h2>
-              <span className="text-[12px] tabular-nums text-foreground-muted">
-                {activeFeedback.length}
-              </span>
-            </div>
-
-            {activeFeedback.length === 0 ? (
-              <p className="mt-4 text-[13px] text-foreground-muted">No feedback yet.</p>
-            ) : (
-              <ul className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain pr-1">
-                {activeFeedback.map((item) => {
-                  const up = item.reaction === "up";
-                  const down = item.reaction === "down";
-                  return (
-                    <li
-                      key={item.id}
-                      className="grid h-16 shrink-0 grid-rows-[auto_auto] content-center gap-1 rounded-[10px] border border-border bg-surface-muted/80 px-3"
-                    >
-                      <div className="flex items-center gap-2">
-                        {up ? (
-                          <ThumbsUp size={14} className="shrink-0 text-success" strokeWidth={2} />
-                        ) : down ? (
-                          <ThumbsDown size={14} className="shrink-0 text-danger" strokeWidth={2} />
-                        ) : null}
-                        <p className="min-w-0 flex-1 truncate text-[13px] font-medium text-foreground">
-                          {item.deal_id}
-                        </p>
-                        <span className="shrink-0 text-[11px] tabular-nums text-foreground-subtle">
-                          {formatDate(item.created_at)}
-                        </span>
-                      </div>
-                      <p className="truncate text-[13px] leading-none text-foreground-muted">
-                        {item.comment || "No comment"}
-                      </p>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </aside>
+          <Card className="max-h-[min(36rem,calc(100dvh-10rem))] gap-0 overflow-hidden py-0 lg:h-0 lg:max-h-none lg:min-h-full">
+            <CardHeader className="shrink-0 px-5 py-4">
+              <CardTitle>Feedback</CardTitle>
+            </CardHeader>
+            <Separator />
+            <CardContent className="flex min-h-0 flex-1 flex-col px-0 pb-0">
+              {activeFeedback.length === 0 ? (
+                <p className="px-5 py-4 text-sm text-muted-foreground">No feedback yet.</p>
+              ) : (
+                <ScrollArea className="min-h-0 flex-1">
+                  <ul className="space-y-2 px-5 py-4">
+                    {activeFeedback.map((item) => {
+                      const up = item.reaction === "up";
+                      const down = item.reaction === "down";
+                      return (
+                        <li key={item.id}>
+                          <Card
+                            size="sm"
+                            className="gap-1.5 border-border bg-muted py-3 shadow-none ring-1 ring-border"
+                          >
+                            <div className="flex items-center gap-2 px-(--card-spacing)">
+                              {up ? (
+                                <ThumbsUp
+                                  size={14}
+                                  className="shrink-0 text-success"
+                                  strokeWidth={2}
+                                />
+                              ) : down ? (
+                                <ThumbsDown
+                                  size={14}
+                                  className="shrink-0 text-danger"
+                                  strokeWidth={2}
+                                />
+                              ) : null}
+                              <p className="min-w-0 flex-1 truncate text-sm font-medium">
+                                {item.deal_id}
+                              </p>
+                              <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                                {formatDate(item.created_at)}
+                              </span>
+                            </div>
+                            <p className="truncate px-(--card-spacing) text-sm text-muted-foreground">
+                              {item.comment || "No comment"}
+                            </p>
+                          </Card>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </ScrollArea>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         <section className="relative mt-8">

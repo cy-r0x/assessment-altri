@@ -19,19 +19,14 @@ type DealListProps = {
 };
 
 export function DealList({ deals, pagination }: DealListProps) {
-  const { page, total_pages, total } = pagination;
+  const { page, total_pages } = pagination;
 
   return (
     <div className="mx-auto w-full max-w-[1760px] px-5 pb-8 pt-4 md:px-8 xl:px-10">
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-2 border-b border-border pb-4">
-        <div>
-          <h1 className="text-[24px] font-medium tracking-tight text-foreground md:text-[26px]">
-            Deals
-          </h1>
-        </div>
-        <p className="text-[14px] tabular-nums text-foreground-muted">
-          {total} total · page {page} of {total_pages}
-        </p>
+      <div className="mb-4 border-b border-border pb-4">
+        <h1 className="text-[24px] font-medium tracking-tight text-foreground md:text-[26px]">
+          Deals
+        </h1>
       </div>
 
       <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -54,7 +49,7 @@ export function DealList({ deals, pagination }: DealListProps) {
                     className="object-cover"
                     preload={index < 4}
                   />
-                  <span className="absolute bottom-3 left-3 rounded-[8px] bg-foreground/90 px-2.5 py-1 text-[15px] font-medium tabular-nums text-primary-foreground">
+                  <span className="absolute bottom-3 right-3 rounded-[8px] bg-foreground/90 px-2.5 py-1 text-[15px] font-medium tabular-nums text-primary-foreground">
                     {formatBudget(deal.purchase_price)}
                   </span>
                 </div>
