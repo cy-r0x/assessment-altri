@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 const roboto = Roboto({
@@ -19,7 +20,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={cn("h-dvh antialiased font-sans", roboto.variable)}>
       <body className={cn("min-h-dvh bg-background font-sans text-foreground", roboto.className)}>
-        {children}
+        <TooltipProvider delay={200}>{children}</TooltipProvider>
       </body>
     </html>
   );

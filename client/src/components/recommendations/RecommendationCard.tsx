@@ -10,6 +10,7 @@ import {
   Home,
   Info,
   MapPin,
+  MessageSquare,
   MessageSquarePlus,
   ThumbsDown,
   ThumbsUp,
@@ -23,6 +24,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { dealImageUrl, formatBudget, formatCoc, postFeedback } from "@/lib/api";
 import type { Recommendation } from "@/lib/types";
 
@@ -202,16 +208,57 @@ export function RecommendationCard({
         </div>
 
         <div className="flex flex-1 flex-col gap-1 px-4 pb-3 pt-3">
-          <p className="truncate text-[16px] font-medium text-foreground">
-            {deal.address ?? "Deal"}
-          </p>
-          <p className="flex items-center gap-1.5 text-[13px] text-foreground-muted">
-            <MapPin size={14} className="shrink-0" aria-hidden />
-            <span className="truncate">
-              {location}
-              {setting ? ` · ${setting}` : ""}
-            </span>
-          </p>
+          <div className="flex items-start gap-1">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[16px] leading-snug font-medium text-foreground">
+                {deal.address ?? "Deal"}
+              </p>
+              <p className="mt-0.5 flex items-center gap-1.5 text-[13px] leading-snug text-foreground-muted">
+                <MapPin size={14} className="shrink-0" aria-hidden />
+                <span className="truncate">
+                  {location}
+                  {setting ? ` · ${setting}` : ""}
+                </span>
+              </p>
+            </div>
+            {explanation ? (
+              <span
+                className="relative z-20 -mt-1.5 -mr-1.5 shrink-0"
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                }}
+                onKeyDown={(event) => event.stopPropagation()}
+              >
+                <Tooltip>
+                  <TooltipTrigger
+                    delay={200}
+                    render={
+                      <button
+                        type="button"
+                        aria-label="Why this deal"
+                        className="inline-flex size-10 cursor-pointer items-center justify-center rounded-full text-foreground-muted transition-colors hover:bg-surface-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      />
+                    }
+                  >
+                    <Info size={20} strokeWidth={2.25} aria-hidden />
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="top"
+                    align="end"
+                    className="max-w-[260px] flex-col items-start gap-1 rounded-[10px] px-3 py-2.5 text-left"
+                  >
+                    <span className="text-[10px] font-medium tracking-wide text-background/70 uppercase">
+                      Why this deal
+                    </span>
+                    <span className="text-[12px] leading-snug text-background">
+                      {explanation}
+                    </span>
+                  </TooltipContent>
+                </Tooltip>
+              </span>
+            ) : null}
+          </div>
 
           <div className="mt-3 flex items-center gap-4 border-t border-border pt-3">
             <div className="shrink-0">
@@ -244,26 +291,7 @@ export function RecommendationCard({
             </div>
           </dl>
 
-          {explanation ? (
-            <div className="mt-3 flex gap-2.5 rounded-[10px] bg-surface-muted/90 px-3 py-2.5">
-              <span
-                aria-hidden
-                className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-surface text-foreground shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]"
-              >
-                <Info size={12} strokeWidth={2.25} />
-              </span>
-              <div className="min-w-0">
-                <p className="text-[11px] font-medium tracking-wide text-foreground-subtle uppercase">
-                  Why this deal
-                </p>
-                <p className="mt-0.5 text-[13px] leading-snug text-foreground">
-                  {explanation}
-                </p>
-              </div>
-            </div>
-          ) : null}
-
-          <dl className="mt-3 grid grid-cols-3 divide-x divide-border border-t border-border pt-3">
+          <dl className="mt-auto grid grid-cols-3 divide-x divide-border border-t border-border pt-3">
             <Spec icon={<BedDouble size={14} aria-hidden />} label="Beds" value={deal.bedrooms} />
             <Spec icon={<Bath size={14} aria-hidden />} label="Baths" value={deal.baths} />
             <Spec
@@ -276,6 +304,44 @@ export function RecommendationCard({
           </dl>
         </div>
       </Link>
+
+      {!composerOpen && reaction ? (
+        <div className="flex h-[68px] shrink-0 items-center border-t border-border px-4">
+          {savedComment ? (
+            <button
+              type="button"
+              disabled={pending}
+              onClick={onEditComment}
+              className="flex h-12 w-full cursor-pointer items-center gap-2.5 rounded-[10px] bg-surface-muted/90 px-3 text-left transition-colors hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-60"
+            >
+              <span
+                aria-hidden
+                className="flex size-6 shrink-0 items-center justify-center rounded-full bg-surface text-foreground shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]"
+              >
+                <MessageSquare size={12} strokeWidth={2.25} />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-[11px] font-medium tracking-wide text-foreground-subtle uppercase">
+                  Your note · Edit
+                </span>
+                <span className="mt-0.5 line-clamp-1 text-[13px] leading-snug text-foreground">
+                  {savedComment}
+                </span>
+              </span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled={pending}
+              onClick={onEditComment}
+              className="flex h-12 w-full cursor-pointer items-center gap-2.5 rounded-[10px] border border-dashed border-border bg-surface-muted/40 px-3 text-left text-[13px] font-medium text-foreground-muted transition-colors hover:border-border-strong hover:bg-surface-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-60"
+            >
+              <MessageSquarePlus size={14} aria-hidden />
+              Add a comment
+            </button>
+          )}
+        </div>
+      ) : null}
 
       <div className="absolute right-3 top-3 z-10 flex items-center gap-1.5">
         <FeedbackButton
@@ -421,36 +487,6 @@ export function RecommendationCard({
         </DialogContent>
       </Dialog>
 
-      {!composerOpen && reaction ? (
-        <div className="border-t border-border px-4 py-2.5">
-          {savedComment ? (
-            <p className="line-clamp-2 text-[12px] leading-snug text-foreground-muted">
-              <span className="font-medium text-foreground">Your note · </span>
-              {savedComment}
-            </p>
-          ) : (
-            <button
-              type="button"
-              disabled={pending}
-              onClick={onEditComment}
-              className="inline-flex cursor-pointer items-center gap-1.5 text-[12px] font-medium text-foreground-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
-            >
-              <MessageSquarePlus size={13} aria-hidden />
-              Add a comment
-            </button>
-          )}
-          {savedComment ? (
-            <button
-              type="button"
-              disabled={pending}
-              onClick={onEditComment}
-              className="mt-1 inline-flex cursor-pointer text-[12px] font-medium text-foreground-muted underline-offset-2 transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
-            >
-              Edit note
-            </button>
-          ) : null}
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -482,6 +518,7 @@ function FeedbackButton({
   pending,
   tone,
   onClick,
+  neutral = false,
 }: {
   children: ReactNode;
   label: string;
@@ -489,9 +526,11 @@ function FeedbackButton({
   pending: boolean;
   tone: "up" | "down";
   onClick: () => void;
+  neutral?: boolean;
 }) {
-  const activeClass =
-    tone === "up"
+  const activeClass = neutral
+    ? "bg-foreground text-primary-foreground"
+    : tone === "up"
       ? "bg-success text-primary-foreground"
       : "bg-danger text-primary-foreground";
 
@@ -499,15 +538,18 @@ function FeedbackButton({
     <button
       type="button"
       aria-label={label}
-      aria-pressed={active}
+      aria-pressed={neutral ? undefined : active}
       disabled={pending}
+      title={label}
       onClick={(event) => {
         event.preventDefault();
         event.stopPropagation();
         onClick();
       }}
       className={`inline-flex size-9 min-h-9 min-w-9 cursor-pointer items-center justify-center rounded-full shadow-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 ${
-        active ? activeClass : "bg-surface text-foreground hover:bg-surface-muted"
+        active
+          ? activeClass
+          : "bg-surface text-foreground hover:bg-surface-muted"
       }`}
     >
       {children}
