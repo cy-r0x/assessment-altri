@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
@@ -8,9 +8,14 @@ type PageShellProps = {
   children: ReactNode;
   width?: "list" | "detail";
   className?: string;
-};
+} & ComponentPropsWithoutRef<"div">;
 
-export function PageShell({ children, width = "list", className }: PageShellProps) {
+export function PageShell({
+  children,
+  width = "list",
+  className,
+  ...props
+}: PageShellProps) {
   return (
     <div
       className={cn(
@@ -19,6 +24,7 @@ export function PageShell({ children, width = "list", className }: PageShellProp
         width === "detail" && "max-w-[1400px] px-6 pb-12 md:px-10",
         className,
       )}
+      {...props}
     >
       {children}
     </div>

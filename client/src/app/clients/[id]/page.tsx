@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { notFound } from "next/navigation";
 
-import { AppHeader } from "@/components/AppHeader";
 import { BackLink, PageShell } from "@/components/PageShell";
 import { ClientAvatar } from "@/components/clients/ClientAvatar";
 import { RecommendationList } from "@/components/recommendations/RecommendationList";
@@ -71,13 +70,10 @@ export default async function ClientPage({ params }: ClientPageProps) {
   const flexibilityLabel = titleCase(profile.budget_flexibility);
 
   return (
-    <div className="min-h-dvh bg-background">
-      <AppHeader />
+    <PageShell width="detail" className="relative">
+      <BackLink href="/" label="Clients" />
 
-      <PageShell width="detail" className="relative">
-        <BackLink href="/" label="Clients" />
-
-        <div className="relative mt-4 grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-stretch">
+      <div className="relative mt-4 grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-stretch">
           <section className="rounded-[14px] border border-border/80 bg-surface p-6 shadow-[var(--shadow-card)]">
             <div className="flex items-center gap-5">
               <ClientAvatar id={profile.id} size="xl" />
@@ -232,7 +228,6 @@ export default async function ClientPage({ params }: ClientPageProps) {
           )}
         </section>
       </PageShell>
-    </div>
   );
 }
 
