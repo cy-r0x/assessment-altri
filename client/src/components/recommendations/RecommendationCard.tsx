@@ -4,7 +4,15 @@ import { useState, useTransition, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bath, BedDouble, Home, MapPin, ThumbsDown, ThumbsUp } from "lucide-react";
+import {
+  Bath,
+  BedDouble,
+  Home,
+  Info,
+  MapPin,
+  ThumbsDown,
+  ThumbsUp,
+} from "lucide-react";
 
 import { dealImageUrl, formatBudget, formatCoc, postFeedback } from "@/lib/api";
 import type { Recommendation } from "@/lib/types";
@@ -27,7 +35,7 @@ export function RecommendationCard({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  const { deal, market, metrics } = rec;
+  const { deal, market, metrics, explanation } = rec;
   const location =
     market.name || [deal.city, deal.state].filter(Boolean).join(", ") || "—";
   const setting = market.setting ? titleCase(market.setting) : null;
@@ -174,6 +182,25 @@ export function RecommendationCard({
             </dd>
           </div>
         </dl>
+
+        {explanation ? (
+          <div className="mt-3 flex gap-2.5 rounded-[10px] bg-surface-muted/90 px-3 py-2.5">
+            <span
+              aria-hidden
+              className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-surface text-foreground shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]"
+            >
+              <Info size={12} strokeWidth={2.25} />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[11px] font-medium tracking-wide text-foreground-subtle uppercase">
+                Why this deal
+              </p>
+              <p className="mt-0.5 text-[13px] leading-snug text-foreground">
+                {explanation}
+              </p>
+            </div>
+          </div>
+        ) : null}
 
         <dl className="mt-3 grid grid-cols-3 divide-x divide-border border-t border-border pt-3">
           <Spec icon={<BedDouble size={14} aria-hidden />} label="Beds" value={deal.bedrooms} />
