@@ -21,13 +21,18 @@ type RecommendationListProps = {
   feedback?: FeedbackItem[];
 };
 
-function latestReactions(feedback: FeedbackItem[] | undefined): Map<string, "up" | "down"> {
-  const map = new Map<string, "up" | "down">();
+function latestFeedbackByDeal(
+  feedback: FeedbackItem[] | undefined,
+): Map<string, { reaction: "up" | "down"; comment: string | null }> {
+  const map = new Map<string, { reaction: "up" | "down"; comment: string | null }>();
   if (!feedback) return map;
   for (const item of feedback) {
     if (map.has(item.deal_id)) continue;
     if (item.reaction === "up" || item.reaction === "down") {
-      map.set(item.deal_id, item.reaction);
+      map.set(item.deal_id, {
+        reaction: item.reaction,
+        comment: item.comment ?? null,
+      });
     }
   }
   return map;
@@ -51,7 +56,7 @@ export function RecommendationList({
   );
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const reactions = latestReactions(feedback);
+  const feedbackByDeal = latestFeedbackByDeal(feedback);
 
   const { page, total_pages } = pagination;
   const rankOffset = (page - 1) * pagination.limit;
@@ -99,16 +104,20 @@ export function RecommendationList({
                     <RecommendationCardSkeleton />
                   </li>
                 ))
-              : recommendations.map((rec, index) => (
-                  <li key={rec.deal.id}>
-                    <RecommendationCard
-                      clientId={clientId}
-                      rec={rec}
-                      rank={rankOffset + index + 1}
-                      initialReaction={reactions.get(rec.deal.id) ?? null}
-                    />
-                  </li>
-                ))}
+              : recommendations.map((rec, index) => {
+                  const prior = feedbackByDeal.get(rec.deal.id);
+                  return (
+                    <li key={rec.deal.id}>
+                      <RecommendationCard
+                        clientId={clientId}
+                        rec={rec}
+                        rank={rankOffset + index + 1}
+                        initialReaction={prior?.reaction ?? null}
+                        initialComment={prior?.comment ?? null}
+                      />
+                    </li>
+                  );
+                })}
           </ul>
 
           {error ? (

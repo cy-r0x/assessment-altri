@@ -30,11 +30,13 @@ class FeedbackService:
         client_id = str(payload.get("client_id") or "").strip()
         deal_id = str(payload.get("deal_id") or "").strip()
         reaction = str(payload.get("reaction") or "").strip().lower()
-        comment = payload.get("comment")
-        if isinstance(comment, str):
-            comment = comment.strip() or None
-        elif comment is not None:
-            comment = str(comment).strip() or None
+        comment_provided = "comment" in payload
+        comment = payload.get("comment") if comment_provided else None
+        if comment_provided:
+            if isinstance(comment, str):
+                comment = comment.strip() or None
+            elif comment is not None:
+                comment = str(comment).strip() or None
 
         if not client_id or not deal_id:
             raise AppError("client_id and deal_id are required", status_code=422)
@@ -58,7 +60,18 @@ class FeedbackService:
 
             if existing:
                 latest = existing[0]
-                # Same reaction → undo every row for this pair.
+                # Same reaction with an explicit comment field → update the note only.
+                if latest.reaction == reaction and comment_provided:
+                    keep = latest
+                    for row in existing[1:]:
+                        session.delete(row)
+                    keep.comment = comment
+                    keep.created_at = date.today()
+                    session.commit()
+                    session.refresh(keep)
+                    return {**keep.to_dict(), "action": "updated"}
+
+                # Same reaction again (no comment field) → undo every row for this pair.
                 if latest.reaction == reaction:
                     for row in existing:
                         session.delete(row)
@@ -70,8 +83,7 @@ class FeedbackService:
                 for row in existing[1:]:
                     session.delete(row)
                 keep.reaction = reaction
-                if comment is not None:
-                    keep.comment = comment
+                keep.comment = comment if comment_provided else keep.comment
                 keep.created_at = date.today()
                 session.commit()
                 session.refresh(keep)

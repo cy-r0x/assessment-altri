@@ -17,7 +17,9 @@ class FeedbackCreate(BaseModel):
 @router.post("/feedback")
 def create_feedback(payload: FeedbackCreate):
     """Upsert thumbs: create, overwrite, or undo if the same reaction is posted again."""
-    result = feedback_service.create_feedback(payload.model_dump())
+    # exclude_unset so omitting comment means undo-on-same-reaction,
+    # while comment=null means clear/update the note.
+    result = feedback_service.create_feedback(payload.model_dump(exclude_unset=True))
     action = result.get("action")
     if action == "undone":
         return success("Feedback removed successfully", result)

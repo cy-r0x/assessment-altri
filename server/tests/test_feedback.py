@@ -217,6 +217,60 @@ def test_different_reaction_overwrites_existing_feedback():
     assert len(session.feedback) == 1
 
 
+def test_same_reaction_with_comment_updates_note():
+    existing = Feedback(
+        id=12,
+        client_id="C-07",
+        deal_id="D-104",
+        reaction="up",
+        comment=None,
+        created_at=date(2026, 11, 1),
+    )
+    service, session = _service([existing])
+
+    saved = service.create_feedback(
+        {
+            "client_id": "C-07",
+            "deal_id": "D-104",
+            "reaction": "up",
+            "comment": "  Great views  ",
+        }
+    )
+
+    assert saved["action"] == "updated"
+    assert saved["reaction"] == "up"
+    assert saved["comment"] == "Great views"
+    assert existing.comment == "Great views"
+    assert session.deleted == []
+    assert len(session.feedback) == 1
+
+
+def test_same_reaction_with_null_comment_clears_note():
+    existing = Feedback(
+        id=12,
+        client_id="C-07",
+        deal_id="D-104",
+        reaction="down",
+        comment="Too expensive",
+        created_at=date(2026, 11, 1),
+    )
+    service, _session = _service([existing])
+
+    saved = service.create_feedback(
+        {
+            "client_id": "C-07",
+            "deal_id": "D-104",
+            "reaction": "down",
+            "comment": None,
+        }
+    )
+
+    assert saved["action"] == "updated"
+    assert saved["reaction"] == "down"
+    assert saved["comment"] is None
+    assert existing.comment is None
+
+
 def test_overwrite_collapses_duplicate_rows():
     rows = [
         Feedback(
