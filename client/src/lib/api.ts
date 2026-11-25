@@ -4,6 +4,7 @@ import type {
   ClientSummary,
   DealDetail,
   DealSummary,
+  RecommendationsResponse,
 } from "@/lib/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
@@ -32,6 +33,21 @@ export async function fetchClient(clientId: string): Promise<ApiSuccess<ClientDe
 
   if (!res.ok) {
     throw new Error(`Failed to load client (${res.status})`);
+  }
+
+  return res.json();
+}
+
+export async function fetchRecommendations(
+  clientId: string,
+): Promise<ApiSuccess<RecommendationsResponse>> {
+  const url = new URL(`/api/v1/clients/${clientId}/recommendations`, API_URL);
+  const res = await fetch(url, {
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to load recommendations (${res.status})`);
   }
 
   return res.json();
@@ -85,6 +101,11 @@ export function formatFocus(focus: string | null | undefined): string {
 export function formatPct(value: number | null | undefined): string {
   if (value == null) return "—";
   return `${Math.round(value * 100)}%`;
+}
+
+export function formatCoc(value: number | null | undefined): string {
+  if (value == null) return "—";
+  return `${(value * 100).toFixed(1)}%`;
 }
 
 /** Soft cover tones — Airbnb-like photo block without a flat initials badge. */

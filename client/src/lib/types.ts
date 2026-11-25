@@ -72,6 +72,38 @@ export type DealDetail = DealSummary & {
   analyst_notes: string | null;
 };
 
+export type Range3<T> = { low: T; mid: T; high: T };
+
+export type RecommendationMarket = {
+  id: string | null;
+  name: string | null;
+  setting: string | null;
+  annual_appreciation: number | null;
+};
+
+export type DealMetrics = {
+  cash_needed: number;
+  debt_service: number;
+  cash_flow: Range3<number>;
+  coc: Range3<number | null>;
+};
+
+export type Recommendation = {
+  deal: DealSummary;
+  market: RecommendationMarket;
+  metrics: DealMetrics;
+  explanation: string;
+};
+
+export type ExcludedDeal = { deal_id: string; rule: string };
+
+export type RecommendationsResponse = {
+  client_id: string;
+  main_focus: string | null;
+  recommendations: Recommendation[];
+  excluded: ExcludedDeal[];
+};
+
 export type Pagination = {
   page: number;
   limit: number;

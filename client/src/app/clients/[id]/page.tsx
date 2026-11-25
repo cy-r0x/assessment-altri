@@ -17,7 +17,8 @@ import { notFound } from "next/navigation";
 
 import { AppHeader } from "@/components/AppHeader";
 import { ClientAvatar } from "@/components/clients/ClientAvatar";
-import { fetchClient, formatBudget, formatFocus } from "@/lib/api";
+import { RecommendationList } from "@/components/recommendations/RecommendationList";
+import { fetchClient, fetchRecommendations, formatBudget, formatFocus } from "@/lib/api";
 
 type ClientPageProps = {
   params: Promise<{ id: string }>;
@@ -26,14 +27,18 @@ type ClientPageProps = {
 export default async function ClientPage({ params }: ClientPageProps) {
   const { id } = await params;
 
-  let result;
-  try {
-    result = await fetchClient(id);
-  } catch {
+  const [clientSettled, recommendationsSettled] = await Promise.allSettled([
+    fetchClient(id),
+    fetchRecommendations(id),
+  ]);
+
+  if (clientSettled.status === "rejected") {
     notFound();
   }
 
-  const { profile, feedback } = result.data;
+  const { profile, feedback } = clientSettled.value.data;
+  const recommendations =
+    recommendationsSettled.status === "fulfilled" ? recommendationsSettled.value.data : null;
   const ups = feedback.filter((f) => f.reaction === "up").length;
   const downs = feedback.filter((f) => f.reaction === "down").length;
 
@@ -147,6 +152,19 @@ export default async function ClientPage({ params }: ClientPageProps) {
             )}
           </aside>
         </div>
+
+        <section className="relative mt-8">
+          {recommendations ? (
+            <RecommendationList data={recommendations} />
+          ) : (
+            <div className="rounded-[14px] border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+              <h2 className="text-[16px] font-medium text-foreground">Recommendations</h2>
+              <p className="mt-2 text-[13px] text-foreground-muted">
+                Couldn&apos;t load recommendations
+              </p>
+            </div>
+          )}
+        </section>
       </main>
     </div>
   );
