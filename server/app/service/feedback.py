@@ -10,8 +10,6 @@ from __future__ import annotations
 
 from datetime import date
 
-from sqlalchemy import select
-
 from app.core import AppError
 from app.db import Client, Database, Deal, Feedback, get_db_instance
 
@@ -45,17 +43,16 @@ class FeedbackService:
 
         session = self.db.get_session()
         try:
-            if session.get(Client, client_id) is None:
+            if Client.get_by_id(session, client_id) is None:
                 raise AppError("Client not found", status_code=404)
-            if session.get(Deal, deal_id) is None:
+            if Deal.get_by_id(session, deal_id) is None:
                 raise AppError("Deal not found", status_code=404)
 
-            existing = list(
-                session.scalars(
-                    select(Feedback)
-                    .where(Feedback.client_id == client_id, Feedback.deal_id == deal_id)
-                    .order_by(Feedback.created_at.desc(), Feedback.id.desc())
-                ).all()
+            existing = Feedback.get_many(
+                session,
+                Feedback.client_id == client_id,
+                Feedback.deal_id == deal_id,
+                order_by=(Feedback.created_at.desc(), Feedback.id.desc()),
             )
 
             if existing:

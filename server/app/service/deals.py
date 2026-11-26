@@ -1,7 +1,5 @@
 from math import ceil
 
-from sqlalchemy import func, select
-
 from app.core import AppError
 from app.db import Database, Deal, get_db_instance
 
@@ -17,10 +15,13 @@ class DealService:
 
         session = self.db.get_session()
         try:
-            total = session.scalar(select(func.count()).select_from(Deal)) or 0
-            deals = session.scalars(
-                select(Deal).order_by(Deal.id).offset(offset).limit(limit)
-            ).all()
+            total = Deal.count(session)
+            deals = Deal.get_many(
+                session,
+                order_by=Deal.id,
+                offset=offset,
+                limit=limit,
+            )
 
             return {
                 "items": [deal.to_summary() for deal in deals],
@@ -37,7 +38,7 @@ class DealService:
     def get_deal(self, deal_id: str):
         session = self.db.get_session()
         try:
-            deal = session.get(Deal, deal_id)
+            deal = Deal.get_by_id(session, deal_id)
             if deal is None:
                 raise AppError("Deal not found", status_code=404)
             return deal.to_dict()

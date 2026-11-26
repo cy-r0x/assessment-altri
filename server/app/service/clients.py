@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from math import ceil
 
-from sqlalchemy import func, select
-
 from app.core import AppError
 from app.db import Client, Database, Deal, Feedback, Market, get_db_instance
 from app.service.deal_math import compute_deal_metrics
@@ -160,10 +158,13 @@ class ClientService:
 
         session = self.db.get_session()
         try:
-            total = session.scalar(select(func.count()).select_from(Client)) or 0
-            clients = session.scalars(
-                select(Client).order_by(Client.id).offset(offset).limit(limit)
-            ).all()
+            total = Client.count(session)
+            clients = Client.get_many(
+                session,
+                order_by=Client.id,
+                offset=offset,
+                limit=limit,
+            )
 
             return {
                 "items": [client.to_summary() for client in clients],
@@ -180,23 +181,23 @@ class ClientService:
     def get_client(self, client_id: str):
         session = self.db.get_session()
         try:
-            client = session.get(Client, client_id)
+            client = Client.get_by_id(session, client_id)
             if client is None:
                 raise AppError("Client not found", status_code=404)
 
-            feedback = session.scalars(
-                select(Feedback)
-                .where(Feedback.client_id == client_id)
-                .order_by(Feedback.created_at.desc(), Feedback.id.desc())
-            ).all()
+            feedback = Feedback.get_many(
+                session,
+                Feedback.client_id == client_id,
+                order_by=(Feedback.created_at.desc(), Feedback.id.desc()),
+            )
 
             deal_ids = {item.deal_id for item in feedback}
             deals_by_id = {
                 deal.id: deal
-                for deal in session.scalars(
-                    select(Deal).where(Deal.id.in_(deal_ids))
-                ).all()
-            } if deal_ids else {}
+                for deal in (
+                    Deal.get_many(session, Deal.id.in_(deal_ids)) if deal_ids else []
+                )
+            }
 
             feedback_payload = []
             for item in feedback:
@@ -219,19 +220,19 @@ class ClientService:
         limit = min(max(limit, 1), 100)
         session = self.db.get_session()
         try:
-            client = session.get(Client, client_id)
+            client = Client.get_by_id(session, client_id)
             if client is None:
                 raise AppError("Client not found", status_code=404)
 
-            deals = session.scalars(select(Deal).order_by(Deal.id)).all()
-            markets = session.scalars(select(Market)).all()
+            deals = Deal.get_many(session, order_by=Deal.id)
+            markets = Market.get_many(session)
 
             # Latest reaction per deal — drives soft exclude (down) and boost (up).
-            feedback_rows = session.scalars(
-                select(Feedback)
-                .where(Feedback.client_id == client_id)
-                .order_by(Feedback.created_at.desc(), Feedback.id.desc())
-            ).all()
+            feedback_rows = Feedback.get_many(
+                session,
+                Feedback.client_id == client_id,
+                order_by=(Feedback.created_at.desc(), Feedback.id.desc()),
+            )
             latest_reaction: dict[str, str] = {}
             for row in feedback_rows:
                 if row.deal_id not in latest_reaction:
