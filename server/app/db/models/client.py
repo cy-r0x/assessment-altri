@@ -6,6 +6,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.models.base import Base
+from app.db.models.types import ClientProfile, ClientSummary
 
 
 class Client(Base):
@@ -29,7 +30,7 @@ class Client(Base):
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     onboarded_at: Mapped[date | None] = mapped_column(Date, nullable=True)
 
-    def to_summary(self) -> dict[str, Any]:
+    def to_summary(self) -> ClientSummary:
         return {
             "id": self.id,
             "name": self.name,
@@ -42,7 +43,7 @@ class Client(Base):
             "onboarded_at": self.onboarded_at.isoformat() if self.onboarded_at else None,
         }
 
-    def to_profile(self) -> dict[str, Any]:
+    def to_profile(self) -> ClientProfile:
         return {
             **self.to_summary(),
             "down_payment_pct": float(self.down_payment_pct)

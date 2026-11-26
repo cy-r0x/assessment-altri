@@ -6,6 +6,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.models.base import Base
+from app.db.models.types import DealDetail, DealSummary
 
 
 class Deal(Base):
@@ -31,7 +32,7 @@ class Deal(Base):
     analyst_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     approved_at: Mapped[date | None] = mapped_column(Date, nullable=True)
 
-    def to_summary(self) -> dict[str, Any]:
+    def to_summary(self) -> DealSummary:
         return {
             "id": self.id,
             "address": self.address,
@@ -49,7 +50,7 @@ class Deal(Base):
             "approved_at": self.approved_at.isoformat() if self.approved_at else None,
         }
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> DealDetail:
         return {
             **self.to_summary(),
             "interest_rate": float(self.interest_rate)

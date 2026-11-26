@@ -1,10 +1,10 @@
 from datetime import date
-from typing import Any
 
 from sqlalchemy import Date, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.models.base import Base
+from app.db.models.types import FeedbackDict
 
 
 class Feedback(Base):
@@ -17,7 +17,7 @@ class Feedback(Base):
     comment: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[date | None] = mapped_column(Date, nullable=True)
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> FeedbackDict:
         return {
             "id": self.id,
             "client_id": self.client_id,
