@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from typing import Any
+
+from app.service.types import DealMetrics
+
 
 def yearly_debt_service(loan_amount: float, annual_rate: float, years: int = 30) -> float:
     """Yearly payment on a fixed amortizing loan (monthly compounding)."""
@@ -16,7 +20,7 @@ def yearly_debt_service(loan_amount: float, annual_rate: float, years: int = 30)
     return monthly_payment * 12
 
 
-def setup_total(setup_items: list | None) -> float:
+def setup_total(setup_items: list[Any] | None) -> float:
     if not setup_items:
         return 0.0
     total = 0.0
@@ -32,14 +36,19 @@ def cash_needed(
     purchase_price: float,
     down_payment_pct: float,
     closing_cost_pct: float,
-    setup_items: list | None,
+    setup_items: list[Any] | None,
 ) -> float:
     """price×DP + price×closing% + setup×1.10."""
     setup = setup_total(setup_items) * 1.10
     return purchase_price * down_payment_pct + purchase_price * closing_cost_pct + setup
 
 
-def cash_flow(revenue: float, annual_opex: float, cohost_fee_pct: float, debt_service: float) -> float:
+def cash_flow(
+    revenue: float,
+    annual_opex: float,
+    cohost_fee_pct: float,
+    debt_service: float,
+) -> float:
     """revenue − opex − revenue×cohost − debt service."""
     return revenue - annual_opex - revenue * cohost_fee_pct - debt_service
 
@@ -50,7 +59,7 @@ def coc(flow: float, needed: float) -> float | None:
     return flow / needed
 
 
-def compute_deal_metrics(deal, client) -> dict:
+def compute_deal_metrics(deal: Any, client: Any) -> DealMetrics:
     price = float(deal.purchase_price or 0)
     down = float(client.down_payment_pct or 0)
     closing = float(deal.closing_cost_pct or 0)

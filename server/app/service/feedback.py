@@ -9,9 +9,11 @@ One row per (client_id, deal_id):
 from __future__ import annotations
 
 from datetime import date
+from typing import Any
 
 from app.core import AppError
 from app.db import Client, Database, Deal, Feedback, get_db_instance
+from app.service.types import FeedbackMutationResult
 
 
 class FeedbackService:
@@ -24,7 +26,7 @@ class FeedbackService:
             self._db = get_db_instance()
         return self._db
 
-    def create_feedback(self, payload: dict):
+    def create_feedback(self, payload: dict[str, Any]) -> FeedbackMutationResult:
         client_id = str(payload.get("client_id") or "").strip()
         deal_id = str(payload.get("deal_id") or "").strip()
         reaction = str(payload.get("reaction") or "").strip().lower()
@@ -73,7 +75,11 @@ class FeedbackService:
                     for row in existing:
                         session.delete(row)
                     session.commit()
-                    return {"action": "undone", "client_id": client_id, "deal_id": deal_id}
+                    return {
+                        "action": "undone",
+                        "client_id": client_id,
+                        "deal_id": deal_id,
+                    }
 
                 # Different reaction → keep one row, overwrite, drop duplicates.
                 keep = latest

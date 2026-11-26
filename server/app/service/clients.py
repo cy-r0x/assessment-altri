@@ -1,25 +1,42 @@
 from __future__ import annotations
 
 from math import ceil
+from typing import Any
 
 from app.core import AppError
 from app.db import Client, Database, Deal, Feedback, Market, get_db_instance
 from app.service.deal_math import compute_deal_metrics
+from app.service.types import (
+    ClientDetailResult,
+    ClientListResult,
+    DealMetrics,
+    ExcludedDeal,
+    ExcludedDealMetrics,
+    FeedbackWithDeal,
+    RecommendationItem,
+    RecommendationsResult,
+)
 
 
 def _norm(value: str | None) -> str:
     return (value or "").strip().lower()
 
 
-def _excluded_row(deal: Deal, rule: str, **extra) -> dict:
-    row = {
+def _excluded_row(
+    deal: Deal,
+    rule: str,
+    *,
+    metrics: ExcludedDealMetrics | None = None,
+) -> ExcludedDeal:
+    row: ExcludedDeal = {
         "deal_id": deal.id,
         "rule": rule,
         "deal_address": deal.address,
         "deal_city": deal.city,
         "deal_state": deal.state,
     }
-    row.update(extra)
+    if metrics is not None:
+        row["metrics"] = metrics
     return row
 
 
@@ -51,7 +68,11 @@ def _resolve_market(deal: Deal, markets: list[Market]) -> Market | None:
     return None
 
 
-def _is_avoided(deal: Deal, market: Market | None, avoid_markets: list | None) -> str | None:
+def _is_avoided(
+    deal: Deal,
+    market: Market | None,
+    avoid_markets: list[Any] | None,
+) -> str | None:
     avoids = [a for a in (avoid_markets or []) if a]
     if not avoids:
         return None
@@ -66,7 +87,7 @@ def _is_avoided(deal: Deal, market: Market | None, avoid_markets: list | None) -
     return None
 
 
-def _pencils(client: Client, metrics: dict) -> str | None:
+def _pencils(client: Client, metrics: DealMetrics) -> str | None:
     focus = _norm(client.main_focus)
     cf_low = metrics["cash_flow"]["low"]
     coc_low = metrics["coc"]["low"]
@@ -82,7 +103,12 @@ def _pencils(client: Client, metrics: dict) -> str | None:
     return None
 
 
-def _rank_key(client: Client, deal: Deal, market: Market | None, metrics: dict):
+def _rank_key(
+    client: Client,
+    deal: Deal,
+    market: Market | None,
+    metrics: DealMetrics,
+) -> tuple[Any, ...]:
     focus = _norm(client.main_focus)
     coc_mid = metrics["coc"]["mid"] or -999
     coc_low = metrics["coc"]["low"] or -999
@@ -101,7 +127,12 @@ def _rank_key(client: Client, deal: Deal, market: Market | None, metrics: dict):
     return (-coc_mid, -coc_low, deal.id)
 
 
-def _explanation(client: Client, deal: Deal, market: Market | None, metrics: dict) -> str:
+def _explanation(
+    client: Client,
+    deal: Deal,
+    market: Market | None,
+    metrics: DealMetrics,
+) -> str:
     focus = _norm(client.main_focus)
     coc_mid = metrics["coc"]["mid"]
     coc_txt = f"{coc_mid * 100:.1f}%" if coc_mid is not None else "n/a"
@@ -151,7 +182,7 @@ class ClientService:
     def __init__(self, db: Database | None = None) -> None:
         self.db = db or get_db_instance()
 
-    def list_clients(self, page: int = 1, limit: int = 10):
+    def list_clients(self, page: int = 1, limit: int = 10) -> ClientListResult:
         page = max(page, 1)
         limit = min(max(limit, 1), 100)
         offset = (page - 1) * limit
@@ -178,7 +209,7 @@ class ClientService:
         finally:
             session.close()
 
-    def get_client(self, client_id: str):
+    def get_client(self, client_id: str) -> ClientDetailResult:
         session = self.db.get_session()
         try:
             client = Client.get_by_id(session, client_id)
@@ -199,14 +230,17 @@ class ClientService:
                 )
             }
 
-            feedback_payload = []
+            feedback_payload: list[FeedbackWithDeal] = []
             for item in feedback:
                 deal = deals_by_id.get(item.deal_id)
-                row = item.to_dict()
-                row["deal_address"] = deal.address if deal else None
-                row["deal_city"] = deal.city if deal else None
-                row["deal_state"] = deal.state if deal else None
-                feedback_payload.append(row)
+                feedback_payload.append(
+                    {
+                        **item.to_dict(),
+                        "deal_address": deal.address if deal else None,
+                        "deal_city": deal.city if deal else None,
+                        "deal_state": deal.state if deal else None,
+                    }
+                )
 
             return {
                 "profile": client.to_profile(),
@@ -215,7 +249,12 @@ class ClientService:
         finally:
             session.close()
 
-    def get_recommendations(self, client_id: str, page: int = 1, limit: int = 6):
+    def get_recommendations(
+        self,
+        client_id: str,
+        page: int = 1,
+        limit: int = 6,
+    ) -> RecommendationsResult:
         page = max(page, 1)
         limit = min(max(limit, 1), 100)
         session = self.db.get_session()
@@ -239,8 +278,8 @@ class ClientService:
                     latest_reaction[row.deal_id] = (row.reaction or "").strip().lower()
 
             budget_cap = _budget_cap(client)
-            recommendations = []
-            excluded = []
+            scored: list[tuple[tuple[Any, ...], RecommendationItem]] = []
+            excluded: list[ExcludedDeal] = []
 
             for deal in deals:
                 market = _resolve_market(deal, markets)
@@ -306,35 +345,33 @@ class ClientService:
                     continue
 
                 liked_first = 0 if reaction == "up" else 1
-                recommendations.append(
-                    {
-                        "deal": deal.to_summary(),
-                        "market": {
-                            "id": market.id if market else None,
-                            "name": market.name if market else None,
-                            "setting": market.setting if market else None,
-                            "annual_appreciation": float(market.annual_appreciation)
-                            if market and market.annual_appreciation is not None
-                            else None,
-                        },
-                        "metrics": {
-                            "cash_needed": metrics["cash_needed"],
-                            "debt_service": metrics["debt_service"],
-                            "cash_flow": metrics["cash_flow"],
-                            "coc": metrics["coc"],
-                        },
-                        "explanation": _explanation(client, deal, market, metrics),
-                        "_sort": (
-                            liked_first,
-                            _pref_boost(client, market, deal),
-                            *_rank_key(client, deal, market, metrics),
-                        ),
-                    }
+                item: RecommendationItem = {
+                    "deal": deal.to_summary(),
+                    "market": {
+                        "id": market.id if market else None,
+                        "name": market.name if market else None,
+                        "setting": market.setting if market else None,
+                        "annual_appreciation": float(market.annual_appreciation)
+                        if market and market.annual_appreciation is not None
+                        else None,
+                    },
+                    "metrics": {
+                        "cash_needed": metrics["cash_needed"],
+                        "debt_service": metrics["debt_service"],
+                        "cash_flow": metrics["cash_flow"],
+                        "coc": metrics["coc"],
+                    },
+                    "explanation": _explanation(client, deal, market, metrics),
+                }
+                sort_key = (
+                    liked_first,
+                    _pref_boost(client, market, deal),
+                    *_rank_key(client, deal, market, metrics),
                 )
+                scored.append((sort_key, item))
 
-            recommendations.sort(key=lambda row: row["_sort"])
-            for row in recommendations:
-                row.pop("_sort", None)
+            scored.sort(key=lambda row: row[0])
+            recommendations = [item for _, item in scored]
 
             total = len(recommendations)
             total_pages = ceil(total / limit) if limit else 0
