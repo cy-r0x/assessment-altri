@@ -1,4 +1,4 @@
-# Part A — remaining
+# Part A — status
 
 ## Still open
 
@@ -9,7 +9,7 @@ None. Part A functional gaps are closed.
 - **Thumbs down** → deal soft-excluded into **Filtered out** with rule `Client disliked`
 - **Undo** from Filtered out (same `down` again, no comment field) → feedback row deleted → deal returns to ranked list
 - **Thumbs up** → deal boosted to front of recommendations
-- Comments unchanged (modal on reaction)
+- Comment modal is note-only (no reaction switcher); reaction comes from the card thumbs
 
 ## Done (Part A checklist)
 
@@ -26,10 +26,8 @@ None. Part A functional gaps are closed.
 | Filtered-out list + reason (+ dislike undo) | Done |
 | Thumbs up/down with optional comment; list refresh | Done |
 | Tests on deal math + hard filters / ranking / feedback effects | Done |
+| Docker Compose one-command start + seed | Done (`docker compose up --build`) |
 
-## Not Part A (brief submission / Part B)
+## Outside Part A (see also)
 
-- Part B: use comments, call summaries, market data to improve recs
-- Docker Compose / one-command start
-- Submission README (≤2 pages)
-- Demo video + AI notes / cost
+- Assessment overview: [assessment-status.md](./assessment-status.md)
