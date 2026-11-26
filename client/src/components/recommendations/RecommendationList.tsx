@@ -66,7 +66,7 @@ export function RecommendationList({
   ) {
     setRecommendations(result.data.recommendations);
     setExcluded(result.data.excluded);
-    if (result.pagination) setPagination(result.pagination);
+    setPagination(result.pagination);
   }
 
   function reload(nextPage = page) {

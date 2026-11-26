@@ -15,7 +15,7 @@ def list_clients(
     result = client_service.list_clients(page=page, limit=limit)
     return success(
         "Clients fetched successfully",
-        result["items"],
+        result["data"],
         pagination=result["pagination"],
     )
 

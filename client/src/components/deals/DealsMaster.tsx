@@ -7,12 +7,6 @@ type DealsMasterProps = {
 
 export async function DealsMaster({ page = 1 }: DealsMasterProps) {
   const result = await fetchDeals(page, 12);
-  const pagination = result.pagination ?? {
-    page,
-    limit: 12,
-    total: result.data.length,
-    total_pages: 1,
-  };
 
-  return <DealList deals={result.data} pagination={pagination} />;
+  return <DealList deals={result.data} pagination={result.pagination} />;
 }

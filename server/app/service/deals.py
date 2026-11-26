@@ -28,7 +28,7 @@ class DealService:
             )
 
             return {
-                "items": [deal.to_summary() for deal in deals],
+                "data": [deal.to_summary() for deal in deals],
                 "pagination": {
                     "page": page,
                     "limit": limit,

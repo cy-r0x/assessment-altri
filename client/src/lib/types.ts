@@ -120,8 +120,21 @@ export type Pagination = {
   total_pages: number;
 };
 
+/** Mirrors server `PaginatedResult[T]` — always `data` + `pagination`. */
+export type PaginatedResult<T> = {
+  data: T;
+  pagination: Pagination;
+};
+
 export type ApiSuccess<T> = {
   message: string;
   data: T;
   pagination?: Pagination;
+};
+
+/** List endpoints always include pagination alongside `data`. */
+export type PaginatedApiSuccess<T> = {
+  message: string;
+  data: T;
+  pagination: Pagination;
 };

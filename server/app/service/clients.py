@@ -198,7 +198,7 @@ class ClientService:
             )
 
             return {
-                "items": [client.to_summary() for client in clients],
+                "data": [client.to_summary() for client in clients],
                 "pagination": {
                     "page": page,
                     "limit": limit,

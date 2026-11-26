@@ -20,6 +20,13 @@ class Pagination(TypedDict):
     total_pages: int
 
 
+class PaginatedResult[T](TypedDict):
+    """Default paginated service response: always `data` + `pagination`."""
+
+    data: T
+    pagination: Pagination
+
+
 class Range3(TypedDict):
     low: float
     mid: float
@@ -47,9 +54,8 @@ class RecommendationMetrics(TypedDict):
     coc: CocRange3
 
 
-class ClientListResult(TypedDict):
-    items: list[ClientSummary]
-    pagination: Pagination
+class ClientListResult(PaginatedResult[list[ClientSummary]]):
+    """GET /clients"""
 
 
 class FeedbackWithDeal(FeedbackDict):
@@ -100,14 +106,12 @@ class RecommendationsData(TypedDict):
     excluded: list[ExcludedDeal]
 
 
-class RecommendationsResult(TypedDict):
-    data: RecommendationsData
-    pagination: Pagination
+class RecommendationsResult(PaginatedResult[RecommendationsData]):
+    """GET /clients/{id}/recommendations"""
 
 
-class DealListResult(TypedDict):
-    items: list[DealSummary]
-    pagination: Pagination
+class DealListResult(PaginatedResult[list[DealSummary]]):
+    """GET /deals"""
 
 
 class FeedbackCreated(FeedbackDict):
@@ -126,7 +130,6 @@ class FeedbackUndone(TypedDict):
 
 FeedbackMutationResult = FeedbackCreated | FeedbackUpdated | FeedbackUndone
 
-# Re-export model payload types used by services.
 __all__ = [
     "ClientDetailResult",
     "ClientListResult",
@@ -145,6 +148,7 @@ __all__ = [
     "FeedbackUndone",
     "FeedbackUpdated",
     "FeedbackWithDeal",
+    "PaginatedResult",
     "Pagination",
     "Range3",
     "RecommendationItem",

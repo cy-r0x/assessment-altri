@@ -41,7 +41,7 @@ export function ClientList({
       try {
         const result = await fetchClients(nextPage, PAGE_SIZE);
         setClients(result.data);
-        if (result.pagination) setPagination(result.pagination);
+        setPagination(result.pagination);
       } catch {
         setError("Couldn’t load clients");
       }

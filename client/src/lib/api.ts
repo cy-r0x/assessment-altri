@@ -5,6 +5,7 @@ import type {
   DealDetail,
   DealSummary,
   FeedbackItem,
+  PaginatedApiSuccess,
   RecommendationsResponse,
 } from "@/lib/types";
 
@@ -17,7 +18,10 @@ export type FeedbackCreatePayload = {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 
-export async function fetchClients(page = 1, limit = 10): Promise<ApiSuccess<ClientSummary[]>> {
+export async function fetchClients(
+  page = 1,
+  limit = 10,
+): Promise<PaginatedApiSuccess<ClientSummary[]>> {
   const url = new URL("/api/v1/clients", API_URL);
   url.searchParams.set("page", String(page));
   url.searchParams.set("limit", String(limit));
@@ -50,7 +54,7 @@ export async function fetchRecommendations(
   clientId: string,
   page = 1,
   limit = 6,
-): Promise<ApiSuccess<RecommendationsResponse>> {
+): Promise<PaginatedApiSuccess<RecommendationsResponse>> {
   const url = new URL(`/api/v1/clients/${clientId}/recommendations`, API_URL);
   url.searchParams.set("page", String(page));
   url.searchParams.set("limit", String(limit));
@@ -65,7 +69,10 @@ export async function fetchRecommendations(
   return res.json();
 }
 
-export async function fetchDeals(page = 1, limit = 12): Promise<ApiSuccess<DealSummary[]>> {
+export async function fetchDeals(
+  page = 1,
+  limit = 12,
+): Promise<PaginatedApiSuccess<DealSummary[]>> {
   const url = new URL("/api/v1/deals", API_URL);
   url.searchParams.set("page", String(page));
   url.searchParams.set("limit", String(limit));

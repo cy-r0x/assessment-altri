@@ -36,7 +36,7 @@ export function DealList({
       try {
         const result = await fetchDeals(nextPage, PAGE_SIZE);
         setDeals(result.data);
-        if (result.pagination) setPagination(result.pagination);
+        setPagination(result.pagination);
       } catch {
         setError("Couldn’t load deals");
       }

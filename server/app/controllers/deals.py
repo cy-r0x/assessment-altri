@@ -15,7 +15,7 @@ def list_deals(
     result = deal_service.list_deals(page=page, limit=limit)
     return success(
         "Deals fetched successfully",
-        result["items"],
+        result["data"],
         pagination=result["pagination"],
     )
 
