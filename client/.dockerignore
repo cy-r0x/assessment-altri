@@ -1,0 +1,17 @@
+node_modules
+.next
+out
+dist
+.git
+.gitignore
+*.md
+.env
+.env.*
+!.env.example
+test-results
+e2e
+playwright.config.ts
+tsconfig.tsbuildinfo
+.agents
+AGENTS.md
+skills-lock.json

@@ -16,7 +16,11 @@ export type FeedbackCreatePayload = {
   comment?: string | null;
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
+// Prefer API_URL on the server (Docker internal hostname). Browser uses NEXT_PUBLIC_*.
+const API_URL =
+  process.env.API_URL ??
+  process.env.NEXT_PUBLIC_API_URL ??
+  "http://127.0.0.1:8000";
 
 export async function fetchClients(
   page = 1,
