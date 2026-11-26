@@ -90,17 +90,11 @@ export function RecommendationCard({
   }
 
   function onThumb(next: "up" | "down") {
-    if (pending) return;
+    if (pending || composerOpen) return;
 
     // Same saved reaction again → undo immediately.
-    if (!composerOpen && reaction === next) {
+    if (reaction === next) {
       persist(next, null, { undo: true });
-      return;
-    }
-
-    // Switching draft thumbs while composer is open.
-    if (composerOpen) {
-      setDraftReaction(next);
       return;
     }
 
@@ -392,32 +386,6 @@ export function RecommendationCard({
           </DialogHeader>
 
           <div className="space-y-5 px-5 py-4">
-            <fieldset className="space-y-2" disabled={pending}>
-              <legend className="text-[13px] font-medium text-foreground">
-                Your reaction
-              </legend>
-              <div
-                className="grid grid-cols-2 gap-2"
-                role="group"
-                aria-label="Reaction"
-              >
-                <ReactionChoice
-                  active={draftReaction === "up"}
-                  tone="up"
-                  label="Thumbs up"
-                  pending={pending}
-                  onClick={() => setDraftReaction("up")}
-                />
-                <ReactionChoice
-                  active={draftReaction === "down"}
-                  tone="down"
-                  label="Thumbs down"
-                  pending={pending}
-                  onClick={() => setDraftReaction("down")}
-                />
-              </div>
-            </fieldset>
-
             <div className="space-y-2">
               <div className="flex items-baseline justify-between gap-3">
                 <label
@@ -556,43 +524,6 @@ function FeedbackButton({
       }`}
     >
       {children}
-    </button>
-  );
-}
-
-function ReactionChoice({
-  active,
-  tone,
-  label,
-  pending,
-  onClick,
-}: {
-  active: boolean;
-  tone: "up" | "down";
-  label: string;
-  pending: boolean;
-  onClick: () => void;
-}) {
-  const Icon = tone === "up" ? ThumbsUp : ThumbsDown;
-  const activeClass =
-    tone === "up"
-      ? "border-success bg-success-soft text-success ring-success/30"
-      : "border-danger bg-danger-soft text-danger ring-danger/30";
-
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      disabled={pending}
-      onClick={onClick}
-      className={`inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-[12px] border px-3 text-[13px] font-medium transition-[background-color,border-color,box-shadow,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 ${
-        active
-          ? `${activeClass} ring-2`
-          : "border-border bg-surface text-foreground hover:bg-surface-muted"
-      }`}
-    >
-      <Icon size={15} strokeWidth={2.25} aria-hidden />
-      {label}
     </button>
   );
 }
